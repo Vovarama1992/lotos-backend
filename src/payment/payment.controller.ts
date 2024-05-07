@@ -19,10 +19,12 @@ export class PaymentController {
   }
 
   @Post("callback")
-  receivePaymentEvent(@Body() data: any) {
+  async receivePaymentEvent(@Body() data: any) {
     const { status, invoice_id, amount_crypto, currency, order_id, token } =
       data;
 
-      console.log(data)
+    console.log(data);
+    const invoice = await this.cryptoCloudService.getInvoiceInfo([invoice_id]);
+    console.log(invoice);
   }
 }
