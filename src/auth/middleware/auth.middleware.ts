@@ -17,6 +17,8 @@ export class AuthMiddleware implements NestMiddleware {
       return next();
     }
 
+    console.log(accessToken)
+
     try {
       const { userId: id, role }: AccessTokenPayload = verify(
         accessToken,

@@ -25,6 +25,8 @@ import { DocumentsModule } from "./documents/documents.module";
 //import { MailModule } from './mail/mail.module';
 import { GatewayModule } from "./gateway/gateway.module";
 import { AppGateway } from "./app.gateway";
+import { CryptocloudService } from './cryptocloud/cryptocloud.service';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -55,10 +57,11 @@ import { AppGateway } from "./app.gateway";
     GameHistoryModule,
     DocumentsModule,
     GatewayModule,
+    PaymentModule,
     //MailModule
   ],
   controllers: [],
-  providers: [GamesService, RedisService, AppGateway],
+  providers: [GamesService, RedisService, AppGateway, CryptocloudService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
