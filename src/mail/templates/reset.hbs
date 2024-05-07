@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Смена пароля</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+
+      table {
+        border-collapse: collapse;
+        margin: 20px auto;
+        width: 600px;
+        border: 3px solid #333;
+        background-color: #ffffff;
+      }
+
+      a {
+        text-decoration: none;
+        color: #2962ff;
+        word-break: break-word;
+      }
+
+      header {
+        background-color: #131721;
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: bold;
+        padding: 20px;
+        text-align: center;
+      }
+
+      footer {
+        background-color: #131721;
+        color: #ffffff;
+        font-size: 12px;
+        padding: 10px;
+        text-align: center;
+      }
+
+      .logo {
+        display: block;
+        margin: 0 auto;
+      }
+
+      .user-info {
+        margin-bottom: 20px;
+      }
+
+      .user-info p {
+        margin: 10px 0;
+      }
+
+      .activation-link {
+        color: #131721;
+        text-decoration: none;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td>
+          <header>
+            <div>Добро пожаловать в</div>
+            <img
+              src="logo2.png"
+              alt="Your Logo"
+              class="logo"
+              style="width: 150px"
+            />
+          </header>
+        </td>
+      </tr>
+      <tr style="font-size: 14px">
+        <td style="padding: 20px">
+          <div class="user-info">
+            <p>Дорогой пользователь,</p>
+            <br />
+
+            <p>
+              Спасибо за регистрацию на нашем сайте. Мы рады видеть Вас, как
+              часть нашего сообщества!
+            </p>
+            <p>Ваша учетная запись была успешно создана.</p>
+
+            <p>
+              Пожалуйста, нажмите на ссылку ниже, чтобы сменить свою
+              пароль:
+            </p>
+            <p style="font-size: large; text-align: center">
+              <a href= {{linkRestore}}>
+                Сменить пароль
+              </a>
+            </p>
+
+            <br />
+            <p>
+              Если ссылка выше не работает, вы можете скопировать и вставить в
+              поле URL в вашем браузере:
+            </p>
+            <p style="font-style: italic; text-align: center">
+             {{linkRestore}}
+            </p>
+            <br />
+
+            <p>Спасибо, что выбрали нас.</p>
+            <p>
+              С наилучшими пожеланиями,<br />
+              Ваш InXstock
+            </p>
+            <br />
+
+            <hr />
+
+            <em style="font-size: 12px">
+              По всем вопросам, связанным с торговой платформой, обращайтесь в
+              службу Поддержки клиентов. Задайте Ваш вопрос, написав на нашем
+              сайте в Чат, telegram @test, или же направив эл. письмо на адрес:
+              test@test.test
+            </em>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <footer>
+            <p>
+              <a href="">Facebook</a> <a href="">Telegram</a>
+              <a href="">Viber</a> <a href="">Whatsapp</a>
+            </p>
+
+            <p>Общая информация: test@test.test</p>
+            <p>Техническая поддержка: test@test.test</p>
+            <p>© 2023 InXstock. Все права защищены.</p>
+          </footer>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
