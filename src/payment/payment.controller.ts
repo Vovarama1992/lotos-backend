@@ -31,7 +31,7 @@ export class PaymentController {
 
     console.log(invoice);
 
-    await this.userService.addTransaction(req.user.id, {
+    const transaction = await this.userService.addTransaction(req.user.id, {
       invoice_id: invoice.result.uuid,
       amount: createCryptoInvoiceDto.amount,
       method: "crypto",
@@ -39,7 +39,7 @@ export class PaymentController {
       status: TransactionStatus.PENDING,
     });
 
-    return invoice;
+    return {invoice, transaction};
   }
 
   @Post("callback")
@@ -47,12 +47,12 @@ export class PaymentController {
     const { status, invoice_id, token } = data;
 
     // console.log(data);
-    try {
-      this.paymentService.verifyPaymentToken(token);
-    } catch (err) {
-      console.log("Forbidden payment event");
-      throw new ForbiddenException();
-    }
+    // try {
+    //   this.paymentService.verifyPaymentToken(token);
+    // } catch (err) {
+    //   console.log("Forbidden payment event");
+    //   throw new ForbiddenException();
+    // }
 
     const invoicesData = await this.cryptoCloudService.getInvoiceInfo([
       invoice_id,

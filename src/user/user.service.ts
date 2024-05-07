@@ -23,7 +23,6 @@ export class UserService {
     try {
       return await this.usersRepository.save({
         ...createUserDto,
-        transactions: [],
       });
     } catch (e) {
       console.log(e);
@@ -61,13 +60,14 @@ export class UserService {
     });
     console.log(user);
     user.transactions.push(transaction);
-    return await this.usersRepository.save(user);
+    await this.usersRepository.save(user);
+    return transaction;
   }
 
   async completeTransaction(transactionId: string) {
     const transaction = await this.transactionsRepository.findOneOrFail({
       where: {
-        invoice_id: transactionId
+        invoice_id: transactionId,
       },
     });
 
