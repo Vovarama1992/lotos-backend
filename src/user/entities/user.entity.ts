@@ -3,10 +3,12 @@ import {
   Column,
   ManyToOne,
   PrimaryGeneratedColumn,
-  JoinColumn
+  JoinColumn,
+  OneToMany
 } from 'typeorm';
 import { ApiProperty } from "@nestjs/swagger"
 import { UserRole } from 'src/constants';
+import { Transaction } from './transaction.entity';
 
 @Entity('user')
 export class User {
@@ -65,5 +67,9 @@ export class User {
 	@ApiProperty({ nullable: true })
 	@Column({ nullable: true, select: false })
 	secretCode: string
+
+	@ApiProperty()
+	@OneToMany(()=>Transaction, (transaction) => transaction.user, {cascade: true})
+	transactions: Transaction[]
 
 }

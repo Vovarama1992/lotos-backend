@@ -7,10 +7,11 @@ import { User } from './entities/user.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { GameHistoryModule } from 'src/game-history/game-history.module';
 import { GatewayModule } from 'src/gateway/gateway.module';
+import { Transaction } from './entities/transaction.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Transaction]),
     forwardRef(() => GameHistoryModule),
     forwardRef(() => AuthModule),
     forwardRef(() => GatewayModule),

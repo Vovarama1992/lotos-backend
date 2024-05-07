@@ -27,6 +27,8 @@ import { GatewayModule } from "./gateway/gateway.module";
 import { AppGateway } from "./app.gateway";
 import { CryptocloudService } from './cryptocloud/cryptocloud.service';
 import { PaymentModule } from './payment/payment.module';
+import { UserService } from "./user/user.service";
+import { Transaction } from "./user/entities/transaction.entity";
 
 @Module({
   imports: [
@@ -43,7 +45,7 @@ import { PaymentModule } from './payment/payment.module';
         password: configService.getOrThrow("POSTGRES_PASSWORD"),
         username: configService.getOrThrow("POSTGRES_USER"),
         autoLoadEntities: true,
-        entities: [User, Freespin, Card, GameHistory],
+        entities: [User, Freespin, Card, GameHistory, Transaction],
         database: configService.getOrThrow("POSTGRES_DB"),
         synchronize: configService.getOrThrow("TYPEORM_AUTOMIGRATE"),
         logging: configService.getOrThrow("TYPEORM_LOGGING"),
