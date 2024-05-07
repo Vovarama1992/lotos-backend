@@ -6,12 +6,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle("Casino BACK")
-    .setDescription("Описание апи")
+    .setTitle("Casino backend")
+    .setDescription("Описание API")
     .setVersion("1.2")
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("swagger", app, document);
+  SwaggerModule.setup("docs", app, document);
 
   app.enableCors({
     origin: [
