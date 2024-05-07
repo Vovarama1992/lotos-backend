@@ -47,12 +47,12 @@ export class PaymentController {
     const { status, invoice_id, token } = data;
 
     // console.log(data);
-    // try {
-    //   this.paymentService.verifyPaymentToken(token);
-    // } catch (err) {
-    //   console.log("Forbidden payment event");
-    //   throw new ForbiddenException();
-    // }
+    try {
+      this.paymentService.verifyPaymentToken(token);
+    } catch (err) {
+      console.log("Forbidden payment event");
+      throw new ForbiddenException();
+    }
 
     const invoicesData = await this.cryptoCloudService.getInvoiceInfo([
       invoice_id,
