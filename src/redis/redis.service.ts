@@ -7,9 +7,9 @@ export class RedisService {
 
   constructor() {
     this.client = new Redis({
-      host: 'localhost', // или другой адрес вашего сервера Redis
-      port: 6379, // стандартный порт Redis
-      password: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
+      host: process.env.REDIS_HOST, // или другой адрес вашего сервера Redis
+      port: +process.env.REDIS_PORT, // стандартный порт Redis
+      password: process.env.REDIS_PASSWORD
     });
   }
 
