@@ -65,7 +65,7 @@ export class PaymentController {
       const currentBalance = await this.userService.getBalance(userId);
       const newBalance = currentBalance + amountInFiat;
       await this.userService.changeBalance(userId, newBalance);
-      await this.userService.completeTransaction(invoice_id);
+      await this.userService.completeTransaction(invoice.uuid);
     }
   }
 }
