@@ -56,13 +56,14 @@ export class TransactionService {
   }
 
   async getAllTransactions(
-    filter: FindOptionsWhere<Transaction> | FindOptionsWhere<Transaction>[]
+    filter: FindOptionsWhere<Transaction> | FindOptionsWhere<Transaction>[],
+    options?: { includeUser: boolean }
   ) {
     return await this.transactionsRepository.findAndCount({
       where: {
         ...filter,
       },
-      relations: { user: true },
+      relations: options.includeUser ? { user: true } : {},
     });
   }
 }

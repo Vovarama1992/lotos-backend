@@ -8,6 +8,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { GameHistoryModule } from 'src/game-history/game-history.module';
 import { GatewayModule } from 'src/gateway/gateway.module';
 import { Transaction } from './entities/transaction.entity';
+import { TransactionModule } from 'src/transaction/transaction.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { Transaction } from './entities/transaction.entity';
     forwardRef(() => GameHistoryModule),
     forwardRef(() => AuthModule),
     forwardRef(() => GatewayModule),
+    forwardRef(() => TransactionModule),
   ],
   controllers: [UserController],
   providers: [UserService],
