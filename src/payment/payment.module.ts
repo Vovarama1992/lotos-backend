@@ -7,9 +7,10 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "src/user/entities/user.entity";
 import { SocketService } from "src/gateway/gateway.service";
 import { UsersModule } from "src/user/user.module";
+import { TransactionModule } from "src/transaction/transaction.module";
 
 @Module({
-  imports: [forwardRef(() => UsersModule)],
+  imports: [forwardRef(() => UsersModule), TransactionModule],
   controllers: [PaymentController],
   providers: [PaymentService, CryptocloudService],
 })

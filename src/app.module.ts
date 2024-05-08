@@ -29,6 +29,8 @@ import { CryptocloudService } from './cryptocloud/cryptocloud.service';
 import { PaymentModule } from './payment/payment.module';
 import { UserService } from "./user/user.service";
 import { Transaction } from "./user/entities/transaction.entity";
+import { TransactionModule } from './transaction/transaction.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -60,6 +62,8 @@ import { Transaction } from "./user/entities/transaction.entity";
     DocumentsModule,
     GatewayModule,
     PaymentModule,
+    TransactionModule,
+    AdminModule,
     //MailModule
   ],
   controllers: [],

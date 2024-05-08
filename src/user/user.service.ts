@@ -65,14 +65,33 @@ export class UserService {
   }
 
   async completeTransaction(transactionId: string) {
-    const transaction = await this.transactionsRepository.findOneOrFail({
-      where: {
-        invoice_id: transactionId,
-      },
-    });
+    const transaction = await this.getTransaction(transactionId);
 
     transaction.status = TransactionStatus.SUCCESS;
     await this.transactionsRepository.save(transaction);
+  }
+
+  async confirmTransactionAsUser(transactionId: string) {
+    const transaction = await this.getTransaction(transactionId);
+
+    transaction.status = TransactionStatus.WAITING_CONFIRMATION;
+    return await this.transactionsRepository.save(transaction);
+  }
+
+  async getTransaction(transactionId: string) {
+    return await this.transactionsRepository.findOneOrFail({
+      where: {
+        id: transactionId,
+      },
+      relations: { user: true },
+    });
+  }
+
+  async confirmTransactionAsAdmin(transactionId: string) {
+    const transaction = await this.getTransaction(transactionId);
+
+    transaction.status = TransactionStatus.SUCCESS;
+    return await this.transactionsRepository.save(transaction);
   }
 
   async findOneSend(credentials: string): Promise<User> {

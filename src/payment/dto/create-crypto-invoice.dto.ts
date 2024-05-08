@@ -4,7 +4,7 @@ export default class CreateCryptoInvoiceDto {
     @IsNumber()
     amount: number
 
-    @IsString()
-    @IsNotEmpty()
-    currency: string;
+    // @IsString()
+    // @IsNotEmpty()
+    // currency: string;
 }
