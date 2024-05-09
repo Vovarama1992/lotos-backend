@@ -63,7 +63,7 @@ export class TransactionService {
       where: {
         ...filter,
       },
-      relations: options.includeUser ? { user: true } : {},
+      relations: { user: options?.includeUser },
     });
   }
 }

@@ -4,72 +4,76 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   JoinColumn,
-  OneToMany
-} from 'typeorm';
-import { ApiProperty } from "@nestjs/swagger"
-import { UserRole } from 'src/constants';
-import { Transaction } from './transaction.entity';
+  OneToMany,
+} from "typeorm";
+import { ApiProperty } from "@nestjs/swagger";
+import { UserRole } from "src/constants";
+import { Transaction } from "src/transaction/entities/transaction.entity";
+import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 
-@Entity('user')
+@Entity("user")
 export class User {
-
   @ApiProperty({ example: 1 })
-	@PrimaryGeneratedColumn('uuid')
-	id: string
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-	@ApiProperty({ example: "Alexey" })
-	@Column({nullable: true})
-	name: string
+  @ApiProperty({ example: "Alexey" })
+  @Column({ nullable: true })
+  name: string;
 
-	@ApiProperty({ example: 123, nullable: true })
-	@Column({ nullable: true })
-	referral_id: string
+  @ApiProperty({ example: 123, nullable: true })
+  @Column({ nullable: true })
+  referral_id: string;
 
-	@ManyToOne(() => User, { nullable: true })
-	@JoinColumn({ name: "referral_id" })
-	referral: User
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: "referral_id" })
+  referral: User;
 
-	@ApiProperty({ example: 100 })
-	@Column({ type: 'double precision', default: 200 })
-	balance: number
+  @ApiProperty({ example: 100 })
+  @Column({ type: "double precision", default: 200 })
+  balance: number;
 
   @ApiProperty({ example: UserRole.USER })
-	@Column({ default: UserRole.USER })
-	role: UserRole
+  @Column({ default: UserRole.USER })
+  role: UserRole;
 
-	@ApiProperty({ example: 50 })
-	@Column({ default: 0 })
-	earned: number
+  @ApiProperty({ example: 50 })
+  @Column({ default: 0 })
+  earned: number;
 
-	@ApiProperty({ example: "+79991234567", nullable: true })
-	@Column({ nullable: true })
-	phone: string
+  @ApiProperty({ example: "+79991234567", nullable: true })
+  @Column({ nullable: true })
+  phone: string;
 
-	@ApiProperty({ example: "test@gmail.com", nullable: true })
-	@Column({ nullable: true })
-	email: string
+  @ApiProperty({ example: "test@gmail.com", nullable: true })
+  @Column({ nullable: true })
+  email: string;
 
-	@ApiProperty({ example: false })
-	@Column({ default: false })
-	isBan: boolean
+  @ApiProperty({ example: false })
+  @Column({ default: false })
+  isBan: boolean;
 
-	@ApiProperty({ example: 1532412312, nullable: true })
-	@Column({
-		nullable: true,
-	})
-	telegram_id: number
+  @ApiProperty({ example: 1532412312, nullable: true })
+  @Column({
+    nullable: true,
+  })
+  telegram_id: number;
 
-	@ApiProperty({ nullable: true })
-	@Column({ nullable: true, select: false})
-	password: string
+  @ApiProperty({ nullable: true })
+  @Column({ nullable: true, select: false })
+  password: string;
 
+  @ApiProperty({ nullable: true })
+  @Column({ nullable: true, select: false })
+  secretCode: string;
 
-	@ApiProperty({ nullable: true })
-	@Column({ nullable: true, select: false })
-	secretCode: string
+  @ApiProperty({ type: () => Transaction , isArray: true})
+  @OneToMany(() => Transaction, (transaction) => transaction.user, {
+    cascade: true,
+  })
+  transactions: Transaction[];
 
-	@ApiProperty()
-	@OneToMany(()=>Transaction, (transaction) => transaction.user, {cascade: true})
-	transactions: Transaction[]
-
+  @ApiProperty({ type: () => Withdraw , isArray: true})
+  @OneToMany(() => Withdraw, (withdraw) => withdraw.user, { cascade: true })
+  withdrawHistory: Withdraw[];
 }

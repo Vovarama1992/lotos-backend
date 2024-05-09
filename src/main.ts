@@ -10,6 +10,7 @@ async function bootstrap() {
     .setTitle("Casino backend")
     .setDescription("Описание API")
     .setVersion("1.2")
+    .addTag('admin', 'Админ')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("docs", app, document);

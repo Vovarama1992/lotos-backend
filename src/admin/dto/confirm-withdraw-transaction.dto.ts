@@ -1,9 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
 
-export default class ConfirmBankTransactionDto {
+export class ConfirmWithdrawTransactionDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  transaction_id: string;
+  withdraw_transaction_id: string;
 }

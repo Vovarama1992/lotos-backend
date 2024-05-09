@@ -7,16 +7,19 @@ import { User } from './entities/user.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { GameHistoryModule } from 'src/game-history/game-history.module';
 import { GatewayModule } from 'src/gateway/gateway.module';
-import { Transaction } from './entities/transaction.entity';
 import { TransactionModule } from 'src/transaction/transaction.module';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
+import { WithdrawHistoryModule } from 'src/withdraw-history/withdraw-history.module';
+import { Withdraw } from 'src/withdraw-history/entities/withdraw-history.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Transaction]),
+    TypeOrmModule.forFeature([User, Transaction, Withdraw]),
     forwardRef(() => GameHistoryModule),
     forwardRef(() => AuthModule),
     forwardRef(() => GatewayModule),
     forwardRef(() => TransactionModule),
+    forwardRef(() => WithdrawHistoryModule),
   ],
   controllers: [UserController],
   providers: [UserService],

@@ -5,32 +5,31 @@ import {
   RequestMethod,
 } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
 import { ScheduleModule } from "@nestjs/schedule";
+import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { UsersModule } from "./user/user.module";
 import { AuthMiddleware } from "./auth/middleware/auth.middleware";
-import { GamesService } from "./games/games.service";
-import { GamesModule } from "./games/games.module";
-import { RedisService } from "./redis/redis.service";
 import { FreespinModule } from "./freespin/freespin.module";
+import { GamesModule } from "./games/games.module";
+import { GamesService } from "./games/games.service";
+import { RedisService } from "./redis/redis.service";
+import { UsersModule } from "./user/user.module";
 
-import { User } from "./user/entities/user.entity";
-import { Freespin } from "./freespin/entities/freespin.entity";
 import { CardModule } from "./card/card.module";
 import { Card } from "./card/entities/card.entity";
-import { GameHistoryModule } from "./game-history/game-history.module";
-import { GameHistory } from "./game-history/entities/game-history.entity";
 import { DocumentsModule } from "./documents/documents.module";
+import { Freespin } from "./freespin/entities/freespin.entity";
+import { GameHistory } from "./game-history/entities/game-history.entity";
+import { GameHistoryModule } from "./game-history/game-history.module";
+import { User } from "./user/entities/user.entity";
 //import { MailModule } from './mail/mail.module';
-import { GatewayModule } from "./gateway/gateway.module";
+import { AdminModule } from './admin/admin.module';
 import { AppGateway } from "./app.gateway";
 import { CryptocloudService } from './cryptocloud/cryptocloud.service';
+import { GatewayModule } from "./gateway/gateway.module";
 import { PaymentModule } from './payment/payment.module';
-import { UserService } from "./user/user.service";
-import { Transaction } from "./user/entities/transaction.entity";
 import { TransactionModule } from './transaction/transaction.module';
-import { AdminModule } from './admin/admin.module';
+import { WithdrawHistoryModule } from './withdraw-history/withdraw-history.module';
 
 @Module({
   imports: [
@@ -47,7 +46,7 @@ import { AdminModule } from './admin/admin.module';
         password: configService.getOrThrow("POSTGRES_PASSWORD"),
         username: configService.getOrThrow("POSTGRES_USER"),
         autoLoadEntities: true,
-        entities: [User, Freespin, Card, GameHistory, Transaction],
+        // entities: [User, Freespin, Card, GameHistory, Transaction],
         database: configService.getOrThrow("POSTGRES_DB"),
         synchronize: configService.getOrThrow("TYPEORM_AUTOMIGRATE"),
         logging: configService.getOrThrow("TYPEORM_LOGGING"),
@@ -64,6 +63,7 @@ import { AdminModule } from './admin/admin.module';
     PaymentModule,
     TransactionModule,
     AdminModule,
+    WithdrawHistoryModule,
     //MailModule
   ],
   controllers: [],

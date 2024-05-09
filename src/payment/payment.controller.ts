@@ -11,7 +11,6 @@ import { Roles } from "src/auth/decorator/roles.decorator";
 import { RolesGuard } from "src/auth/guard/role.guard";
 import { CryptocloudService } from "src/cryptocloud/cryptocloud.service";
 import { TransactionService } from "src/transaction/transaction.service";
-import { TransactionStatus } from "src/user/entities/transaction.entity";
 import { UserService } from "src/user/user.service";
 import { v4 as uuid } from "uuid";
 import ConfirmBankTransactionDto from "./dto/confirm-bank-transaction.dto";
@@ -19,7 +18,20 @@ import CreateBankInvoiceDto from "./dto/create-bank-invoice.dto";
 import CreateCryptoInvoiceDto from "./dto/create-crypto-invoice.dto";
 import { BankInvoice } from "./entities/bankInvoice.entity";
 import { PaymentService } from "./payment.service";
+import {
+  Transaction,
+  TransactionStatus,
+} from "src/transaction/entities/transaction.entity";
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { GetCryptoInvoiceResponseDto } from "./dto/get-crypto-invoice-response.dto";
+import { GetBankInvoiceResponseDto } from "./dto/get-bank-invoice-response.dto";
 
+@ApiTags("payment")
 @UseGuards(RolesGuard)
 @Controller("payment")
 export class PaymentController {
@@ -31,6 +43,15 @@ export class PaymentController {
   ) {}
 
   @Post("crypto")
+  @ApiOperation({ summary: "Платежи - создание крипто счёта" })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiOkResponse({
+    description: "Крипто счёт и транзакция",
+    type: GetCryptoInvoiceResponseDto,
+  })
   async createCryptoInvoice(
     @Body() createCryptoInvoiceDto: CreateCryptoInvoiceDto,
     @Req() req: any
@@ -40,8 +61,6 @@ export class PaymentController {
       currency: "RUB",
       ...createCryptoInvoiceDto,
     });
-
-    console.log(invoice);
 
     const transaction = await this.transactionService.addTransaction(
       req.user.id,
@@ -85,6 +104,17 @@ export class PaymentController {
   }
 
   @Post("bank")
+  @ApiOperation({
+    summary: "Платежи - создание банковского счёта (карта или сбп)",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiOkResponse({
+    description: "Счёт и транзакция",
+    type: GetBankInvoiceResponseDto,
+  })
   async createBankInvoice(
     @Body() createBankInvoiceDto: CreateBankInvoiceDto,
     @Req() req: any
@@ -116,7 +146,20 @@ export class PaymentController {
   }
 
   @Post("confirm-transaction-as-user")
-  async confirmBankTransactionByUser(
+  @ApiOperation({ summary: "Платежи - подтверждение оплаты пользователем" })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Транзакция не найдена",
+  })
+  @ApiOkResponse({
+    description: "Транзакция",
+    type: Transaction,
+  })
+  async confirmBankTransactionAsUser(
     @Body() confirmBankTransactionDto: ConfirmBankTransactionDto,
     @Req() req: any
   ) {
@@ -129,40 +172,5 @@ export class PaymentController {
       console.log(error);
       throw new NotFoundException("Transaction was not found!");
     }
-  }
-
-  @Post("confirm-transaction-as-admin")
-  @Roles(["admin", "root"])
-  async confirmBankTransactionAsAdmin(
-    @Body() confirmBankTransactionDto: ConfirmBankTransactionDto
-  ) {
-    const { transaction_id } = confirmBankTransactionDto;
-    let transaction,
-      error = null;
-    try {
-      transaction = await this.userService.getTransaction(transaction_id);
-      const userId = transaction.user.id;
-
-      if (transaction.status === TransactionStatus.WAITING_CONFIRMATION) {
-        transaction =
-          await this.transactionService.confirmTransactionAsAdmin(
-            transaction_id
-          );
-        const currentBalance = await this.userService.getBalance(userId);
-        const newBalance = currentBalance + transaction.amount;
-        await this.userService.changeBalance(userId, newBalance);
-      } else {
-        error = new ForbiddenException("Can not confirm transaction!");
-      }
-    } catch (err) {
-      console.log(err);
-      error = new NotFoundException("Transaction was not found!");
-    }
-
-    if (error) {
-      throw error;
-    }
-
-    return transaction;
   }
 }

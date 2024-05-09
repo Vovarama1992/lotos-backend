@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { UserResponse } from "./type/userResponse";
 
 import { InjectRepository } from "@nestjs/typeorm";
@@ -7,7 +7,17 @@ import { User } from "./entities/user.entity";
 import { SendMoneyDTO } from "./decorators/sendMoney.dto";
 import { SocketService } from "src/gateway/gateway.service";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
-import { Transaction, TransactionStatus } from "./entities/transaction.entity";
+import {
+  Transaction,
+  TransactionStatus,
+} from "src/transaction/entities/transaction.entity";
+import { WithdrawMoneyDto } from "./dto/withdraw-money.dto";
+import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
+import {
+  Withdraw,
+  WithdrawStatus,
+} from "src/withdraw-history/entities/withdraw-history.entity";
+import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
 
 @Injectable()
 export class UserService {
@@ -16,7 +26,8 @@ export class UserService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
-    private readonly socketService: SocketService
+    private readonly socketService: SocketService,
+    private readonly withdrawService: WithdrawHistoryService
   ) {}
 
   async saveUser(createUserDto: Partial<User>) {
@@ -87,13 +98,6 @@ export class UserService {
     });
   }
 
-  async confirmTransactionAsAdmin(transactionId: string) {
-    const transaction = await this.getTransaction(transactionId);
-
-    transaction.status = TransactionStatus.SUCCESS;
-    return await this.transactionsRepository.save(transaction);
-  }
-
   async findOneSend(credentials: string): Promise<User> {
     return await this.usersRepository.findOne({
       where: [{ email: credentials }, { phone: credentials }],
@@ -141,5 +145,53 @@ export class UserService {
       balance: user.balance,
     });
     return user;
+  }
+
+  async withdrawMoney(user: User, withdrawMoneyDto: WithdrawMoneyDto) {
+    const withdrawTransaction =
+      await this.withdrawService.createWithdrawTransaction({
+        ...withdrawMoneyDto,
+        user,
+      });
+
+    const currentBalance = await this.getBalance(user.id);
+    const newBalance = currentBalance - withdrawTransaction.amount;
+    const updatedUser = await this.changeBalance(user.id, newBalance);
+    return { ...withdrawTransaction, user: updatedUser };
+  }
+
+  async cancelWithdrawMoney(user: User, withdrawTransactionId: string) {
+    let error = null,
+      withdrawTransaction: Withdraw,
+      updatedUser: UserResponse;
+
+    try {
+      withdrawTransaction =
+        await this.withdrawService.cancelWithdrawTransaction(
+          withdrawTransactionId
+        );
+    } catch (err) {
+      error = err;
+    }
+
+    if (!error) {
+      const currentBalance = await this.getBalance(user.id);
+      const newBalance = currentBalance + withdrawTransaction.amount;
+      updatedUser = await this.changeBalance(user.id, newBalance);
+    } else {
+      throw error;
+    }
+
+    return { ...withdrawTransaction, user: updatedUser };
+  }
+
+  async getAllWithdraws(userId: string, filter: GetWithdrawsQueryDto) {
+    return await this.withdrawService.getAllWithdrawTransactions(
+      {
+        ...filter,
+        user: { id: userId },
+      },
+      { includeUser: false }
+    );
   }
 }

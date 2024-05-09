@@ -1,10 +1,12 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsNumber } from "class-validator";
 
 export default class CreateCryptoInvoiceDto {
-    @IsNumber()
-    amount: number
+  @ApiProperty()
+  @IsNumber()
+  amount: number;
 
-    // @IsString()
-    // @IsNotEmpty()
-    // currency: string;
+  // @IsString()
+  // @IsNotEmpty()
+  // currency: string;
 }

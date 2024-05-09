@@ -1,19 +1,33 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Body,
   Controller,
   Get,
   Post,
   Query,
   Req,
-  UnauthorizedException
+  UnauthorizedException,
 } from "@nestjs/common";
 import { GameHistoryService } from "src/game-history/game-history.service";
 import { TransactionService } from "src/transaction/transaction.service";
 import { SendMoneyDTO } from "./decorators/sendMoney.dto";
+import { CancelWithdrawMoneyDto } from "./dto/cancel-withdraw-money.dto";
+import { WithdrawMoneyDto } from "./dto/withdraw-money.dto";
 import { User } from "./entities/user.entity";
 import { UserService } from "./user.service";
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
+import { GetTransactionResponse } from "src/transaction/entities/transaction.entity";
+import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
+import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
 
+@ApiTags("user")
 @Controller("user")
 export class UserController {
   constructor(
@@ -78,6 +92,17 @@ export class UserController {
   }
 
   @Get("/deposits")
+  @ApiOperation({
+    summary: "Пользователь - получить все транзакции на пополнение",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiOkResponse({
+    description: "Транзакции на пополнение",
+    type: GetTransactionResponse,
+  })
   getDeposits(@Req() req, @Query() query: any) {
     const userId = req.user.id;
     return this.transactionService.getAllTransactions(
@@ -87,6 +112,23 @@ export class UserController {
       },
       { includeUser: false }
     );
+  }
+
+  @Get("/withdraws")
+  @ApiOperation({
+    summary: "Пользователь - получить все транзакции на вывод",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiOkResponse({
+    description: "Транзакции на вывод",
+    type: GetTransactionResponse,
+  })
+  getWithdraws(@Req() req, @Query() query: GetWithdrawsQueryDto) {
+    const userId = req.user.id;
+    return this.userService.getAllWithdraws(userId, query);
   }
 
   @Post("/findID")
@@ -107,5 +149,55 @@ export class UserController {
     if (req.user?.balance === 0 || req.user?.balance < sendMoneyDTO.cost)
       return new BadGatewayException(`Недостаточно средств`);
     return await this.userService.sendMoney(req.user, sendMoneyDTO);
+  }
+
+  @Post("/withdraw")
+  @ApiOperation({
+    summary: "Пользователь - отправить заявку на вывод средств",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Некорретные данные или недостаточно средств",
+  })
+  @ApiOkResponse({
+    description: "Счёт и транзакция",
+    type: Withdraw,
+  })
+  async withdrawMoney(@Req() req, @Body() withdrawMoneyDto: WithdrawMoneyDto) {
+    if (req.user?.balance === 0 || req.user?.balance < withdrawMoneyDto.amount)
+      return new BadRequestException(`Недостаточно средств`, {
+        cause: "low-funds",
+      });
+    return await this.userService.withdrawMoney(req.user, withdrawMoneyDto);
+  }
+
+  @Post("/cancel-withdraw")
+  @ApiOperation({
+    summary: "Пользователь - отменить заявку на вывод средств",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Некорретные данные",
+  })
+  @ApiOkResponse({
+    description: "Транзакция на вывод средств",
+    type: Withdraw,
+  })
+  async cancelWithdrawMoney(
+    @Req() req,
+    @Body() cancelWithdrawMoneyDto: CancelWithdrawMoneyDto
+  ) {
+    return await this.userService.cancelWithdrawMoney(
+      req.user,
+      cancelWithdrawMoneyDto.withdraw_transaction_id
+    );
   }
 }
