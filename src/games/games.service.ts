@@ -16,16 +16,13 @@ export class GamesService {
     private readonly redisService: RedisService,
     private readonly freespinService: FreespinService,
     private readonly gameHistoryService: GameHistoryService
-  ) { }
+  ) {
+   }
 
   @Cron('0 */30 * * * *') // Запускается каждые 30 минут
   async fetchData() {
-    const requestBody = {
-      hall: process.env.HALL_ID,
-      key: process.env.HALL_KEY,
-      cmd: "gamesList"
-    };
-    const response = await axios.post(process.env.HALL_API, requestBody);
+    const requestBody = {"hall":"3203325","key":"kvadder","cmd":"gamesList","cdnUrl":"","img":"game_img_2"}
+    const response = await axios.post(process.env.HALL_API, requestBody, {headers: {"Content-Type": "application/json"}});
     await this.redisService.del('gameLabels');
     await this.redisService.del('apiData');
     await this.redisService.set('gameLabels', JSON.stringify(response.data.content.gameLabels));
@@ -33,6 +30,7 @@ export class GamesService {
   }
 
   async getData() {
+    await this.fetchData()
     const cachedData = await this.redisService.get('apiData');
     return cachedData ? JSON.parse(cachedData) : null;
   }
