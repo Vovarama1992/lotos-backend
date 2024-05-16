@@ -32,6 +32,13 @@ export class TransactionService {
     await this.transactionsRepository.save(transaction);
   }
 
+  async completeTransactionByInvoiceId(invoiceId: string) {
+    const transaction = await this.getTransactionByInvoiceId(invoiceId);
+
+    transaction.status = TransactionStatus.SUCCESS;
+    await this.transactionsRepository.save(transaction);
+  }
+
   async confirmTransactionAsUser(transactionId: string) {
     const transaction = await this.getTransaction(transactionId);
 
@@ -43,6 +50,15 @@ export class TransactionService {
     return await this.transactionsRepository.findOneOrFail({
       where: {
         id: transactionId,
+      },
+      relations: { user: true },
+    });
+  }
+
+  async getTransactionByInvoiceId(invoiceId: string) {
+    return await this.transactionsRepository.findOneOrFail({
+      where: {
+        invoice_id: invoiceId,
       },
       relations: { user: true },
     });
