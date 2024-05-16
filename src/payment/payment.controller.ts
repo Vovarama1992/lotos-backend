@@ -94,6 +94,7 @@ export class PaymentController {
 
     if (status === "success") {
       const invoice = invoicesData.result[0];
+      console.log(invoice)
       const amountInFiat = invoice.amount_in_fiat;
       const userId = invoice.order_id;
       const currentBalance = await this.userService.getBalance(userId);
