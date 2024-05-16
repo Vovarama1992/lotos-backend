@@ -80,7 +80,7 @@ export class PaymentController {
   async receivePaymentEvent(@Body() data: any) {
     const { status, invoice_id, token } = data;
 
-    // console.log(data);
+    console.log(data);
     try {
       this.paymentService.verifyPaymentToken(token);
     } catch (err) {

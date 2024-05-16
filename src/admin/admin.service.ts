@@ -54,7 +54,7 @@ export class AdminService {
         const newBalance = currentBalance + transaction.amount;
         await this.userService.changeBalance(userId, newBalance);
       } else {
-        error = new ForbiddenException("Can not confirm transaction!");
+        error = new ForbiddenException("Can not confirm transaction! User must confirm transaction first!");
       }
     } catch (err) {
       console.log(err);
