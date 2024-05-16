@@ -25,7 +25,7 @@ export class AdminService {
   ) {}
   async getTransactions(filter: GetTransactionsQueryDto) {
     const [transactions, count] =
-      await this.transactionService.getAllTransactions(filter);
+      await this.transactionService.getAllTransactions(filter, {includeUser: true});
     return { count, data: transactions };
   }
 
@@ -54,7 +54,9 @@ export class AdminService {
         const newBalance = currentBalance + transaction.amount;
         await this.userService.changeBalance(userId, newBalance);
       } else {
-        error = new ForbiddenException("Can not confirm transaction! User must confirm transaction first!");
+        error = new ForbiddenException(
+          "Can not confirm transaction! User must confirm transaction first!"
+        );
       }
     } catch (err) {
       console.log(err);
@@ -112,7 +114,7 @@ export class AdminService {
     if (error) {
       throw error;
     } else {
-      return withdrawTransaction
+      return withdrawTransaction;
     }
   }
 }
