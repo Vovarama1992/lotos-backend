@@ -13,4 +13,12 @@ export class SocketService {
       console.error("Socket server is not initialized.");
     }
   }
+
+  emitToUsers(userIds: string[], event: string, data: any) {
+    if (this.socket) {
+      this.socket.in(userIds).emit(event, data);
+    } else {
+      console.error("Socket server is not initialized.");
+    }
+  }
 }

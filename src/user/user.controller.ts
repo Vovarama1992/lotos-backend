@@ -3,7 +3,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -28,6 +30,8 @@ import { GetTransactionResponse } from "src/transaction/entities/transaction.ent
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
 import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
 import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
+import { Notification } from "src/notification/entities/notification.entity";
+import { NotificationService } from "src/notification/notification.service";
 
 @ApiTags("user")
 @Controller("user")
@@ -38,16 +42,29 @@ export class UserController {
     private readonly transactionService: TransactionService
   ) {}
 
-  @Get('profile')
-  getUserProfile(@Req() req: any){
+  @Get("notifications")
+  getUserNotifications(@Req() req: any, @Query() query: any) {
+    const {all} = query;
+    return this.userService.getNotifications(req.user.id, all);
+  }
+
+  @Delete("notifications/:id")
+  markNotificationAsViewed(@Param("id") notificationId: string) {
+    return this.userService.markNotificationAsViewed(notificationId);
+  }
+
+  @Get("profile")
+  getUserProfile(@Req() req: any) {
     return this.userService.getProfile(req.user.id);
   }
 
-  @Patch('profile')
-  updateUserProfile(@Body() updateUserProfileDto: UpdateUserProfileDto, @Req() req: any){
+  @Patch("profile")
+  updateUserProfile(
+    @Body() updateUserProfileDto: UpdateUserProfileDto,
+    @Req() req: any
+  ) {
     return this.userService.saveProfile(req.user.id, updateUserProfileDto);
   }
-
 
   @Get()
   findAll() {

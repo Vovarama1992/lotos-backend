@@ -10,6 +10,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { UserRole } from "src/constants";
 import { Transaction } from "src/transaction/entities/transaction.entity";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
+import { Notification } from "src/notification/entities/notification.entity";
 
 export enum UserGender {
   MALE = "male",
@@ -117,4 +118,8 @@ export class User {
   @ApiProperty({ type: () => Withdraw, isArray: true })
   @OneToMany(() => Withdraw, (withdraw) => withdraw.user, { cascade: true })
   withdrawHistory: Withdraw[];
+
+  @ApiProperty({ type: () => Notification, isArray: true })
+  @OneToMany(() => Notification, (notification) => notification.user, { cascade: true })
+  notifications: Notification[];
 }

@@ -12,6 +12,13 @@ import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.se
 import { GetTransactionsQueryDto } from "./dto/get-transactions-query.dto";
 import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
 import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
+import { SocketService } from "src/gateway/gateway.service";
+import { SendMessageToUserDto } from "./dto/send-message-to-user.dto";
+import { NotificationService } from "src/notification/notification.service";
+import {
+  NotificationStatus,
+  NotificationType,
+} from "src/notification/entities/notification.entity";
 
 @Injectable()
 export class AdminService {
@@ -19,8 +26,24 @@ export class AdminService {
     private readonly transactionService: TransactionService,
     private readonly withdrawService: WithdrawHistoryService,
     private readonly userService: UserService,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
+    private readonly socketService: SocketService,
+    private readonly notificationService: NotificationService
   ) {}
+
+  async sendMessageToUser(sendMessageToUserDto: SendMessageToUserDto) {
+    this.socketService.emitToUsers(
+      [sendMessageToUserDto.user_id],
+      "admin-message",
+      sendMessageToUserDto.message
+    );
+
+    await this.notificationService.createNotification(sendMessageToUserDto.user_id, {
+      status: NotificationStatus.INFO,
+      type: NotificationType.ADMIN,
+      message: sendMessageToUserDto.message,
+    });
+  }
 
   async getUserProfileById(userId: string) {
     return await this.userService.getProfile(userId);
@@ -78,6 +101,16 @@ export class AdminService {
         const currentBalance = await this.userService.getBalance(userId);
         const newBalance = currentBalance + transaction.amount;
         await this.userService.changeBalance(userId, newBalance);
+        this.socketService.emitToUsers([userId], "payment.bank.success", {
+          msg: "Успешное банковское пополнение средств",
+          data: transaction,
+        });
+
+        await this.notificationService.createNotification(userId, {
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+          message: "Вы успешно пополнили свой баланс",
+        });
       } else {
         error = new ForbiddenException(
           "Can not confirm transaction! User must confirm transaction first!"
@@ -119,6 +152,18 @@ export class AdminService {
         userId,
         newBalance
       );
+
+      this.socketService.emitToUsers([userId], "withdraw.cancelled", {
+        msg: "Заявка на вывод средств была отменена",
+        data: withdrawTransaction,
+      });
+
+      await this.notificationService.createNotification(userId, {
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+        message: "Не удалось вывести деньги. Ваша заявка была отклонена.",
+      });
+
       return { ...withdrawTransaction, user: updatedUser };
     }
   }
@@ -139,6 +184,17 @@ export class AdminService {
     if (error) {
       throw error;
     } else {
+      const userId = withdrawTransaction.user.id;
+      this.socketService.emitToUsers([userId], "withdraw.success", {
+        msg: "Заявка на вывод средств была исполнена",
+        data: withdrawTransaction,
+      });
+
+      await this.notificationService.createNotification(userId, {
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+        message: "Заявка на вывод средств была исполнена",
+      });
       return withdrawTransaction;
     }
   }

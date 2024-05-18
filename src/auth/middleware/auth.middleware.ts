@@ -17,14 +17,13 @@ export class AuthMiddleware implements NestMiddleware {
       return next();
     }
 
-    console.log(accessToken)
-
     try {
       const { userId: id, role }: AccessTokenPayload = verify(
         accessToken,
         process.env.ACCESS_TOKEN_SECRET,
       );
       user = await this.userService.findOneById(id);   
+      console.log(user)
     } catch (error) {
       throw new ForbiddenException('Please register or sign in.');
     }

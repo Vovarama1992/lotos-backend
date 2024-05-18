@@ -19,6 +19,8 @@ import {
 } from "src/withdraw-history/entities/withdraw-history.entity";
 import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
 import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
+import { UserRole } from "src/constants";
+import { NotificationService } from "src/notification/notification.service";
 
 @Injectable()
 export class UserService {
@@ -28,16 +30,42 @@ export class UserService {
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
     private readonly socketService: SocketService,
-    private readonly withdrawService: WithdrawHistoryService
+    private readonly withdrawService: WithdrawHistoryService,
+    private readonly notificationService: NotificationService
   ) {}
 
-  async getProfile(userId: string){
-    return await this.usersRepository.findOneByOrFail({id: userId});
+  async markNotificationAsViewed(notificationId: string) {
+    return this.notificationService.markViewedNotification(notificationId);
   }
 
-  async saveProfile(userId: string, updateUserProfileDto: UpdateUserProfileDto){
-    const user = await this.usersRepository.findOneByOrFail({id: userId});
-    const updatedUser: User = {...user, ...updateUserProfileDto};
+  async getNotifications(userId: string, all?: boolean) {
+    const isViewedFilter = !all ? { isViewed: false } : {};
+
+    const [data, count] = await this.notificationService.getNotifications({
+      ...isViewedFilter,
+      user: { id: userId },
+    });
+    return { count, data };
+  }
+
+  async getAdminIds() {
+    const res = await this.usersRepository.find({
+      where: { role: UserRole.ADMIN },
+      select: { id: true },
+    });
+    return res.map((el) => el.id);
+  }
+
+  async getProfile(userId: string) {
+    return await this.usersRepository.findOneByOrFail({ id: userId });
+  }
+
+  async saveProfile(
+    userId: string,
+    updateUserProfileDto: UpdateUserProfileDto
+  ) {
+    const user = await this.usersRepository.findOneByOrFail({ id: userId });
+    const updatedUser: User = { ...user, ...updateUserProfileDto };
     return await this.usersRepository.save(updatedUser);
   }
 
@@ -62,7 +90,7 @@ export class UserService {
   }
 
   async findOneById(id: string): Promise<UserResponse> {
-    return await this.usersRepository.findOne({
+    return await this.usersRepository.findOneOrFail({
       where: { id },
     });
   }

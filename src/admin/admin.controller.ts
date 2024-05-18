@@ -21,6 +21,7 @@ import { GetTransactionsQueryDto } from "./dto/get-transactions-query.dto";
 import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
 import { ConfirmWithdrawTransactionDto } from "./dto/confirm-withdraw-transaction.dto";
 import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
+import { SendMessageToUserDto } from "./dto/send-message-to-user.dto";
 
 @ApiTags("admin")
 @UseGuards(RolesGuard)
@@ -28,6 +29,11 @@ import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+
+  @Post('send-message')
+  sendMessageToUser(@Body() sendMessageToUserDto: SendMessageToUserDto){
+    return this.adminService.sendMessageToUser(sendMessageToUserDto);
+  }
 
   @Get("user-profile/:id")
   getUserProfileById(@Param('id') userId: string){

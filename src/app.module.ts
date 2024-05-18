@@ -30,6 +30,10 @@ import { GatewayModule } from "./gateway/gateway.module";
 import { PaymentModule } from './payment/payment.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { WithdrawHistoryModule } from './withdraw-history/withdraw-history.module';
+import { SocketService } from "./gateway/gateway.service";
+import { NotificationModule } from './notification/notification.module';
+import { Transaction } from "./transaction/entities/transaction.entity";
+import { Notification } from "./notification/entities/notification.entity";
 
 @Module({
   imports: [
@@ -46,7 +50,7 @@ import { WithdrawHistoryModule } from './withdraw-history/withdraw-history.modul
         password: configService.getOrThrow("POSTGRES_PASSWORD"),
         username: configService.getOrThrow("POSTGRES_USER"),
         autoLoadEntities: true,
-        // entities: [User, Freespin, Card, GameHistory, Transaction],
+        entities: [User, Freespin, Card, GameHistory, Transaction, Notification],
         database: configService.getOrThrow("POSTGRES_DB"),
         synchronize: configService.getOrThrow("TYPEORM_AUTOMIGRATE"),
         logging: configService.getOrThrow("TYPEORM_LOGGING"),
@@ -64,6 +68,7 @@ import { WithdrawHistoryModule } from './withdraw-history/withdraw-history.modul
     TransactionModule,
     AdminModule,
     WithdrawHistoryModule,
+    NotificationModule,
     //MailModule
   ],
   controllers: [],

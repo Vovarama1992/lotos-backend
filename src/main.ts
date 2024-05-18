@@ -26,6 +26,7 @@ async function bootstrap() {
   });
   // global validation
   app.useGlobalPipes(new ValidationPipe({forbidNonWhitelisted: true, transform: true}));
+  //app.useWebSocketAdapter(new WsAdapter(app))
   await app.listen(process.env.PORT);
 }
 bootstrap();
