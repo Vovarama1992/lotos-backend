@@ -28,13 +28,16 @@ export class AdminService {
   ) {}
 
   async getPaymentDetails() {
+    let response = {
+      card: [],
+      sbp: [],
+    };
     const data = await this.redisService.getJSON("admin/payment-details");
-    if (!data) {
-      return {
-        card: [],
-        sbp: [],
-      };
+    if (data) {
+      response = data;
     }
+
+    return response;
   }
 
   async setPaymentDetails(setPaymentDetailsDto: SavePaymentDetailsDto) {
