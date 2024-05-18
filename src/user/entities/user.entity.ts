@@ -11,7 +11,7 @@ import { UserRole } from "src/constants";
 import { Transaction } from "src/transaction/entities/transaction.entity";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 
-enum UserGender {
+export enum UserGender {
   MALE = "male",
   FEMALE = "female",
 }
@@ -21,6 +21,10 @@ export class User {
   @ApiProperty({ example: 1 })
   @PrimaryGeneratedColumn("uuid")
   id: string;
+
+  @ApiProperty({ example: "username" })
+  @Column({ nullable: true })
+  username: string;
 
   @ApiProperty({ example: "Alexey" })
   @Column({ nullable: true })

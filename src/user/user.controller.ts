@@ -4,6 +4,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Query,
   Req,
@@ -26,6 +27,7 @@ import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity"
 import { GetTransactionResponse } from "src/transaction/entities/transaction.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
 import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
+import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
 
 @ApiTags("user")
 @Controller("user")
@@ -35,6 +37,17 @@ export class UserController {
     private readonly gameHistory: GameHistoryService,
     private readonly transactionService: TransactionService
   ) {}
+
+  @Get('profile')
+  getUserProfile(@Req() req: any){
+    return this.userService.getProfile(req.user.id);
+  }
+
+  @Patch('profile')
+  updateUserProfile(@Body() updateUserProfileDto: UpdateUserProfileDto, @Req() req: any){
+    return this.userService.saveProfile(req.user.id, updateUserProfileDto);
+  }
+
 
   @Get()
   findAll() {

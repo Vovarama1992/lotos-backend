@@ -1,15 +1,13 @@
 import {
   ForbiddenException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from "@nestjs/common";
 import { RedisService } from "src/redis/redis.service";
 import { TransactionStatus } from "src/transaction/entities/transaction.entity";
 import { TransactionService } from "src/transaction/transaction.service";
 import { UserService } from "src/user/user.service";
-import {
-  Withdraw
-} from "src/withdraw-history/entities/withdraw-history.entity";
+import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
 import { GetTransactionsQueryDto } from "./dto/get-transactions-query.dto";
 import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
@@ -23,6 +21,10 @@ export class AdminService {
     private readonly userService: UserService,
     private readonly redisService: RedisService
   ) {}
+
+  async getUserProfileById(userId: string) {
+    return await this.userService.getProfile(userId);
+  }
 
   async getPaymentDetails() {
     let response = {

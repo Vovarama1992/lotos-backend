@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import {
   ApiOkResponse,
   ApiOperation,
@@ -27,6 +27,12 @@ import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 @Controller("admin")
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+
+  @Get("user-profile/:id")
+  getUserProfileById(@Param('id') userId: string){
+    return this.adminService.getUserProfileById(userId);
+  }
 
   // только для администартора
   @Get("payment-details")

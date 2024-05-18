@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { UserResponse } from "./type/userResponse";
 
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, TypeORMError } from "typeorm";
+import { Repository, TypeORMError, getConnection } from "typeorm";
 import { User } from "./entities/user.entity";
 import { SendMoneyDTO } from "./decorators/sendMoney.dto";
 import { SocketService } from "src/gateway/gateway.service";
@@ -18,6 +18,7 @@ import {
   WithdrawStatus,
 } from "src/withdraw-history/entities/withdraw-history.entity";
 import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
+import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
 
 @Injectable()
 export class UserService {
@@ -29,6 +30,16 @@ export class UserService {
     private readonly socketService: SocketService,
     private readonly withdrawService: WithdrawHistoryService
   ) {}
+
+  async getProfile(userId: string){
+    return await this.usersRepository.findOneByOrFail({id: userId});
+  }
+
+  async saveProfile(userId: string, updateUserProfileDto: UpdateUserProfileDto){
+    const user = await this.usersRepository.findOneByOrFail({id: userId});
+    const updatedUser: User = {...user, ...updateUserProfileDto};
+    return await this.usersRepository.save(updatedUser);
+  }
 
   async saveUser(createUserDto: Partial<User>): Promise<User> {
     try {
