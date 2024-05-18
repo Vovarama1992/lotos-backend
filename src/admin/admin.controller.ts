@@ -20,12 +20,62 @@ import { AdminService } from "./admin.service";
 import { GetTransactionsQueryDto } from "./dto/get-transactions-query.dto";
 import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
 import { ConfirmWithdrawTransactionDto } from "./dto/confirm-withdraw-transaction.dto";
+import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 
 @ApiTags("admin")
 @UseGuards(RolesGuard)
 @Controller("admin")
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  // только для администартора
+  @Get("payment-details")
+  @Roles(["root", "admin"])
+  @ApiOperation({ summary: "Админ - получить данные для оплаты" })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован, либо нет прав доступа",
+  })
+  @ApiOkResponse({
+    description: "Данные для оплаты",
+    type: GetTransactionResponse,
+  })
+  getPaymentDetails() {
+    return this.adminService.getPaymentDetails();
+  }
+
+  // только для администартора
+  @Post("payment-details")
+  @Roles(["root", "admin"])
+  @ApiOperation({ summary: "Админ - получить данные для оплаты" })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован, либо нет прав доступа",
+  })
+  @ApiOkResponse({
+    description: "Данные для оплаты",
+    type: GetTransactionResponse,
+  })
+  setPaymentDetails(@Body() savePaymentDetailsDto: SavePaymentDetailsDto) {
+    return this.adminService.setPaymentDetails(savePaymentDetailsDto);
+  }
+
+  @Post("cancel-withdraw")
+  @Roles(["admin", "root"])
+  @ApiOperation({ summary: "Админ - отменить вывод средств" })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован, либо нет прав доступа",
+  })
+  @ApiOkResponse({
+    description: "Отменённая транзакция",
+    type: Transaction,
+  })
+  cancelWithdrawMoney(@Body() cancelWithdrawMoneyDto: CancelWithdrawMoneyDto) {
+    return this.adminService.cancelWithdrawTransaction(
+      cancelWithdrawMoneyDto.withdraw_transaction_id
+    );
+  }
 
   @Post("confirm-transaction")
   @Roles(["admin", "root"])
@@ -83,23 +133,6 @@ export class AdminController {
   getAllTransactions(@Query() query: GetTransactionsQueryDto) {
     const { status } = query;
     return this.adminService.getTransactions({ status: status });
-  }
-
-  @Post("cancel-withdraw")
-  @Roles(["admin", "root"])
-  @ApiOperation({ summary: "Админ - отменить вывод средств" })
-  @ApiResponse({
-    status: 403,
-    description: "Пользователь не авторизован, либо нет прав доступа",
-  })
-  @ApiOkResponse({
-    description: "Отменённая транзакция",
-    type: Transaction,
-  })
-  cancelWithdrawMoney(@Body() cancelWithdrawMoneyDto: CancelWithdrawMoneyDto) {
-    return this.adminService.cancelWithdrawTransaction(
-      cancelWithdrawMoneyDto.withdraw_transaction_id
-    );
   }
 
   @Get("withdraw-history")

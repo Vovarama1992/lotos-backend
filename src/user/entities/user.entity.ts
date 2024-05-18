@@ -11,6 +11,11 @@ import { UserRole } from "src/constants";
 import { Transaction } from "src/transaction/entities/transaction.entity";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 
+enum UserGender {
+  MALE = "male",
+  FEMALE = "female",
+}
+
 @Entity("user")
 export class User {
   @ApiProperty({ example: 1 })
@@ -20,6 +25,34 @@ export class User {
   @ApiProperty({ example: "Alexey" })
   @Column({ nullable: true })
   name: string;
+
+  @ApiProperty({ example: "Nosov", nullable: true })
+  @Column({ nullable: true })
+  surname: string;
+
+  @ApiProperty({ example: new Date(), nullable: true, type: Date })
+  @Column({ nullable: true, type: "date" })
+  dob: string;
+
+  @ApiProperty({ example: UserGender.MALE, nullable: true, enum: UserGender })
+  @Column({ nullable: true, enum: UserGender })
+  gender: UserGender;
+
+  @ApiProperty({ example: "Russia", nullable: true })
+  @Column({ nullable: true, type: "varchar" })
+  country: string;
+
+  @ApiProperty({ example: "Moscow", nullable: true })
+  @Column({ nullable: true })
+  city: string;
+
+  @ApiProperty({ example: "The Kremlin", nullable: true })
+  @Column({ nullable: true })
+  address: string;
+
+  @ApiProperty({ example: "123456", nullable: true })
+  @Column({ nullable: true })
+  zip: string;
 
   @ApiProperty({ example: 123, nullable: true })
   @Column({ nullable: true })
@@ -67,13 +100,17 @@ export class User {
   @Column({ nullable: true, select: false })
   secretCode: string;
 
-  @ApiProperty({ type: () => Transaction , isArray: true})
+  @ApiProperty({ nullable: true })
+  @Column({ default: false, nullable: true })
+  bonusAutoActivation: boolean;
+
+  @ApiProperty({ type: () => Transaction, isArray: true })
   @OneToMany(() => Transaction, (transaction) => transaction.user, {
     cascade: true,
   })
   transactions: Transaction[];
 
-  @ApiProperty({ type: () => Withdraw , isArray: true})
+  @ApiProperty({ type: () => Withdraw, isArray: true })
   @OneToMany(() => Withdraw, (withdraw) => withdraw.user, { cascade: true })
   withdrawHistory: Withdraw[];
 }

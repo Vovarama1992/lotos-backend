@@ -15,17 +15,40 @@ import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.se
 import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
 import { GetTransactionsQueryDto } from "./dto/get-transactions-query.dto";
 import ConfirmBankTransactionDto from "src/payment/dto/confirm-bank-transaction.dto";
+import { RedisService } from "src/redis/redis.service";
+import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 
 @Injectable()
 export class AdminService {
   constructor(
     private readonly transactionService: TransactionService,
     private readonly withdrawService: WithdrawHistoryService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly redisService: RedisService
   ) {}
+
+  async getPaymentDetails() {
+    const data = await this.redisService.getJSON("admin/payment-details");
+    if (!data) {
+      return {
+        card: [],
+        sbp: [],
+      };
+    }
+  }
+
+  async setPaymentDetails(setPaymentDetailsDto: SavePaymentDetailsDto) {
+    return this.redisService.setJSON(
+      "admin/payment-details",
+      setPaymentDetailsDto
+    );
+  }
+
   async getTransactions(filter: GetTransactionsQueryDto) {
     const [transactions, count] =
-      await this.transactionService.getAllTransactions(filter, {includeUser: true});
+      await this.transactionService.getAllTransactions(filter, {
+        includeUser: true,
+      });
     return { count, data: transactions };
   }
 

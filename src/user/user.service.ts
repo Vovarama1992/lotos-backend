@@ -30,7 +30,7 @@ export class UserService {
     private readonly withdrawService: WithdrawHistoryService
   ) {}
 
-  async saveUser(createUserDto: Partial<User>) {
+  async saveUser(createUserDto: Partial<User>): Promise<User> {
     try {
       return await this.usersRepository.save({
         ...createUserDto,
