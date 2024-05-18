@@ -1,21 +1,18 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
+  NotFoundException
 } from "@nestjs/common";
+import { RedisService } from "src/redis/redis.service";
 import { TransactionStatus } from "src/transaction/entities/transaction.entity";
 import { TransactionService } from "src/transaction/transaction.service";
 import { UserService } from "src/user/user.service";
 import {
-  Withdraw,
-  WithdrawStatus,
+  Withdraw
 } from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
-import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
 import { GetTransactionsQueryDto } from "./dto/get-transactions-query.dto";
-import ConfirmBankTransactionDto from "src/payment/dto/confirm-bank-transaction.dto";
-import { RedisService } from "src/redis/redis.service";
+import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
 import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 
 @Injectable()

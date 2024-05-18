@@ -30,6 +30,7 @@ import {
 } from "@nestjs/swagger";
 import { GetCryptoInvoiceResponseDto } from "./dto/get-crypto-invoice-response.dto";
 import { GetBankInvoiceResponseDto } from "./dto/get-bank-invoice-response.dto";
+import { RedisService } from "src/redis/redis.service";
 
 @ApiTags("payment")
 @UseGuards(RolesGuard)
@@ -39,7 +40,8 @@ export class PaymentController {
     private readonly paymentService: PaymentService,
     private readonly cryptoCloudService: CryptocloudService,
     private readonly userService: UserService,
-    private readonly transactionService: TransactionService
+    private readonly transactionService: TransactionService,
+    private readonly redisService: RedisService
   ) {}
 
   @Post("crypto")
@@ -94,13 +96,15 @@ export class PaymentController {
 
     if (status === "success") {
       const invoice = invoicesData.result[0];
-      console.log(invoice)
+      console.log(invoice);
       const amountInFiat = invoice.amount_in_fiat;
       const userId = invoice.order_id;
       const currentBalance = await this.userService.getBalance(userId);
       const newBalance = currentBalance + amountInFiat;
       await this.userService.changeBalance(userId, newBalance);
-      await this.transactionService.completeTransactionByInvoiceId(invoice.uuid);
+      await this.transactionService.completeTransactionByInvoiceId(
+        invoice.uuid
+      );
     }
   }
 
@@ -120,11 +124,14 @@ export class PaymentController {
     @Body() createBankInvoiceDto: CreateBankInvoiceDto,
     @Req() req: any
   ) {
+    const paymentInfo =
+      (await this.redisService.getJSON("admin/payment-details")) || {};
+
     let paymentDetails = {};
     if (createBankInvoiceDto.method === "card") {
-      paymentDetails = { card: process.env.BANK_PAYMENT_CARD };
+      paymentDetails = { card: paymentInfo?.card || [] };
     } else if (createBankInvoiceDto.method === "sbp") {
-      paymentDetails = { sbp: process.env.BANK_PAYMENT_SBP };
+      paymentDetails = { sbp: paymentInfo?.sbp || [] };
     }
 
     const invoice = new BankInvoice({
