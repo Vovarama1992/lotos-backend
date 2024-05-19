@@ -22,6 +22,8 @@ import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto
 import { ConfirmWithdrawTransactionDto } from "./dto/confirm-withdraw-transaction.dto";
 import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 import { SendMessageToUserDto } from "./dto/send-message-to-user.dto";
+import { UserRole } from "src/constants";
+import { CreateManagerDto } from "src/manager/dto/create-manager.dto";
 
 @ApiTags("admin")
 @UseGuards(RolesGuard)
@@ -31,18 +33,26 @@ export class AdminController {
 
 
   @Post('send-message')
+  @Roles([UserRole.ADMIN])
   sendMessageToUser(@Body() sendMessageToUserDto: SendMessageToUserDto){
     return this.adminService.sendMessageToUser(sendMessageToUserDto);
   }
 
+  @Post('create-manager')
+  @Roles([UserRole.ADMIN])
+  createManager(@Body() createManagerDto: CreateManagerDto){
+    return this.adminService.createManagerAccount(createManagerDto);
+  }
+
   @Get("user-profile/:id")
+  @Roles([UserRole.ADMIN])
   getUserProfileById(@Param('id') userId: string){
     return this.adminService.getUserProfileById(userId);
   }
 
   // только для администартора
   @Get("payment-details")
-  @Roles(["root", "admin"])
+  @Roles([UserRole.ADMIN])
   @ApiOperation({ summary: "Админ - получить данные для оплаты" })
   @ApiResponse({
     status: 403,
@@ -58,7 +68,7 @@ export class AdminController {
 
   // только для администартора
   @Post("payment-details")
-  @Roles(["root", "admin"])
+  @Roles([UserRole.ADMIN])
   @ApiOperation({ summary: "Админ - получить данные для оплаты" })
   @ApiResponse({
     status: 403,
@@ -73,7 +83,7 @@ export class AdminController {
   }
 
   @Post("cancel-withdraw")
-  @Roles(["admin", "root"])
+  @Roles([UserRole.ADMIN])
   @ApiOperation({ summary: "Админ - отменить вывод средств" })
   @ApiResponse({
     status: 403,
@@ -90,7 +100,7 @@ export class AdminController {
   }
 
   @Post("confirm-transaction")
-  @Roles(["admin", "root"])
+  @Roles([UserRole.ADMIN])
   @ApiOperation({
     summary: "Админ - подтвержить банковский перевод (пополнение)",
   })
@@ -111,7 +121,7 @@ export class AdminController {
   }
 
   @Post("confirm-withdraw")
-  @Roles(["admin", "root"])
+  @Roles([UserRole.ADMIN])
   @ApiOperation({
     summary: "Админ - подтвержить вывод средств пользователя",
   })
@@ -132,7 +142,7 @@ export class AdminController {
   }
 
   @Get("transactions")
-  @Roles(["admin", "root"])
+  @Roles([UserRole.ADMIN])
   @ApiOperation({ summary: "Админ - получить все транзакции на пополнение" })
   @ApiResponse({
     status: 403,
@@ -148,7 +158,7 @@ export class AdminController {
   }
 
   @Get("withdraw-history")
-  @Roles(["admin", "root"])
+  @Roles([UserRole.ADMIN])
   @ApiOperation({ summary: "Админ - получить все транзакции на вывод средств" })
   @ApiResponse({
     status: 403,

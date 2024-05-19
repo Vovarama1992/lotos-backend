@@ -18,7 +18,8 @@ export class WithdrawHistoryService {
 
   async confirmWithdrawTransaction(withdrawTransactionId: string) {
     const withdraw = await this.getWithdrawTransactionById(
-      withdrawTransactionId
+      withdrawTransactionId,
+      { includeUser: true }
     );
 
     if (withdraw.status !== WithdrawStatus.PENDING) {
@@ -35,7 +36,7 @@ export class WithdrawHistoryService {
   ) {
     return await this.withdrawRepository.findOneOrFail({
       where: { id: withdrawTransactionId },
-      relations: { user: options.includeUser },
+      relations: { user: options?.includeUser },
     });
   }
 

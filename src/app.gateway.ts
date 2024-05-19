@@ -1,17 +1,16 @@
+import { Logger } from "@nestjs/common";
 import {
-  WebSocketGateway,
-  OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
+  WebSocketGateway,
   WebSocketServer,
 } from "@nestjs/websockets";
-import { Logger } from "@nestjs/common";
+import { verify } from "jsonwebtoken";
 import { Server, Socket } from "socket.io";
 import { SocketService } from "./gateway/gateway.service";
-import { UserService } from "./user/user.service";
-import { verify } from "jsonwebtoken";
 
-@WebSocketGateway()
+@WebSocketGateway({cors: {origin: ["http://localhost:5173"]}})
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -35,8 +34,8 @@ export class AppGateway
   afterInit(server: Server) {
     this.socketService.socket = server;
     this.socketService.socket.on("connection", (socket) => {
-      const accessToken = socket.handshake.headers["authorization"];
-      console.log("Connected");
+      const accessToken = socket.handshake.auth["token"];
+      console.log(accessToken);
       let userId = "";
       try {
         const user = verify(accessToken, process.env.ACCESS_TOKEN_SECRET);

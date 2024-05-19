@@ -49,6 +49,10 @@ export class Notification {
   @ManyToOne(() => User, (user) => user.notifications)
   user: User;
 
+  @ApiProperty({ type: Date })
+  @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" }) // Recommended
+  timestamp: string;
+
   constructor(transaction: Partial<Notification>) {
     Object.assign(this, transaction);
   }

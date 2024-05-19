@@ -1,6 +1,6 @@
 enum UserRole {
-  ROOT = 'root',
   ADMIN = 'admin',
+  MANAGER = 'manager',
   USER = 'user'
 }
 

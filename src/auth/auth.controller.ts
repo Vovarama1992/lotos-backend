@@ -21,6 +21,8 @@ import { CodeCheckDto } from "./dto/codeCheck.dto";
 import { MailService } from "src/mail/mail.service";
 import { RedisService } from "src/redis/redis.service";
 import { v4 as uuidv4 } from "uuid";
+import { ReferralInviteService } from "src/referral-invite/referral-invite.service";
+import { error } from "console";
 
 @UseInterceptors(CookieInterceptor)
 @Controller("/auth")
@@ -29,7 +31,8 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     // private readonly mailService: MailService,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
+    private readonly referralInviteService: ReferralInviteService
   ) {}
 
   @Post("check")
@@ -51,7 +54,22 @@ export class AuthController {
     );
     const isNew = existingUser ? false : true;
 
-    console.log(loginUserDto);
+    let manager = null;
+
+    if (loginUserDto.referral_invitation_id) {
+      const referralInvitation = await this.referralInviteService.findOne(
+        loginUserDto.referral_invitation_id
+      );
+
+      if(referralInvitation.is_used){
+        throw new ForbiddenException('Реферальная ссылка уже была использована!')
+      }
+
+      await this.referralInviteService.acceptReferralInvitation(loginUserDto.referral_invitation_id);
+      manager = referralInvitation.manager;
+
+    }
+
     if (email) {
       if (existingUser) {
         let isValid = await bcrypt.compare(password, existingUser.password);
@@ -62,6 +80,7 @@ export class AuthController {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         console.log(hashedPassword);
         existingUser = await this.userService.saveUser({
+          manager,
           email,
           password: hashedPassword,
         });
@@ -84,6 +103,7 @@ export class AuthController {
 
       if (!existingUser) {
         existingUser = await this.userService.saveUser({
+          manager,
           phone: phone,
         });
       }

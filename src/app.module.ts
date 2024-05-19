@@ -34,6 +34,9 @@ import { SocketService } from "./gateway/gateway.service";
 import { NotificationModule } from './notification/notification.module';
 import { Transaction } from "./transaction/entities/transaction.entity";
 import { Notification } from "./notification/entities/notification.entity";
+import { ManagerModule } from './manager/manager.module';
+import { ReferralInviteModule } from './referral-invite/referral-invite.module';
+import { ReferralInvite } from "./referral-invite/entities/referral-invite.entity";
 
 @Module({
   imports: [
@@ -50,7 +53,7 @@ import { Notification } from "./notification/entities/notification.entity";
         password: configService.getOrThrow("POSTGRES_PASSWORD"),
         username: configService.getOrThrow("POSTGRES_USER"),
         autoLoadEntities: true,
-        entities: [User, Freespin, Card, GameHistory, Transaction, Notification],
+        entities: [User, Freespin, Card, GameHistory, Transaction, Notification, ReferralInvite],
         database: configService.getOrThrow("POSTGRES_DB"),
         synchronize: configService.getOrThrow("TYPEORM_AUTOMIGRATE"),
         logging: configService.getOrThrow("TYPEORM_LOGGING"),
@@ -69,6 +72,8 @@ import { Notification } from "./notification/entities/notification.entity";
     AdminModule,
     WithdrawHistoryModule,
     NotificationModule,
+    ManagerModule,
+    ReferralInviteModule,
     //MailModule
   ],
   controllers: [],

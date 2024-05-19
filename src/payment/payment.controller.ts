@@ -85,23 +85,26 @@ export class PaymentController {
     );
 
     const adminUserIds = await this.userService.getAdminIds();
-    this.socketService.emitToUsers(
-      [...adminUserIds, req.user.id],
+    this.notificationService.createNotifications(
+      [req.user.id],
       "payment.crypto.pending",
-      { msg: "Ожидание оплаты через криптоэквайринг", data: transaction }
+      {
+        message: "Ожидание оплаты через криптоэквайринг",
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+      }
     );
-    this.notificationService.createNotification(req.user.id, {
-      message: "Ожидание оплаты через криптоэквайринг",
-      status: NotificationStatus.INFO,
-      type: NotificationType.SYSTEM,
-    });
 
-    this.notificationService.createNotifications(adminUserIds, {
-      message:
-        "Пользователь создал новую заявку на пополнение через криптоэквайринг",
-      status: NotificationStatus.INFO,
-      type: NotificationType.SYSTEM,
-    });
+    this.notificationService.createNotifications(
+      adminUserIds,
+      "payment.crypto.pending",
+      {
+        message:
+          "Пользователь создал новую заявку на пополнение через криптоэквайринг",
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+      }
+    );
 
     return { invoice, transaction };
   }
@@ -129,28 +132,30 @@ export class PaymentController {
       const userId = invoice.order_id;
       const currentBalance = await this.userService.getBalance(userId);
       const newBalance = currentBalance + amountInFiat;
-      await this.userService.changeBalance(userId, newBalance);
+      const user = await this.userService.changeBalance(userId, newBalance);
       await this.transactionService.completeTransactionByInvoiceId(
         invoice.uuid
       );
       const adminUserIds = await this.userService.getAdminIds();
-      this.socketService.emitToUsers(
-        [...adminUserIds, userId],
+      this.notificationService.createNotifications(
+        [userId],
         "payment.crypto.success",
-        { msg: "Успешное пополнение средств", data: invoice }
+        {
+          message: "Вы успешно пополнили счёт через криптоэквайринг",
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+        }
       );
 
-      this.notificationService.createNotification(userId, {
-        message: "Вы успешно пополнили счёт через криптоэквайринг",
-        status: NotificationStatus.INFO,
-        type: NotificationType.SYSTEM,
-      });
-
-      this.notificationService.createNotifications(adminUserIds, {
-        message: "Пользователь успешно пополнил счёт через криптоэквайринг",
-        status: NotificationStatus.INFO,
-        type: NotificationType.SYSTEM,
-      });
+      this.notificationService.createNotifications(
+        adminUserIds,
+        "payment.crypto.success",
+        {
+          message: `Пользователь ${user.email} успешно пополнил счёт через криптоэквайринг`,
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+        }
+      );
     }
   }
 
@@ -197,24 +202,25 @@ export class PaymentController {
     );
 
     const adminUserIds = await this.userService.getAdminIds();
-    this.socketService.emitToUsers(
-      [...adminUserIds, req.user.id],
+    this.notificationService.createNotifications(
+      [req.user.id],
       "payment.bank.pending",
-      { msg: "Ожидание оплаты через банк", data: transaction }
+      {
+        message: "Вы создали заявку на банковское пополнение, ожидание оплаты",
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+      }
     );
 
-    this.notificationService.createNotification(req.user.id, {
-      message: "Ожидание оплаты через банк",
-      status: NotificationStatus.INFO,
-      type: NotificationType.SYSTEM,
-    });
-
-    this.notificationService.createNotifications(adminUserIds, {
-      message:
-        "Пользователь создал заявку на банковское пополнение, ожидание оплаты",
-      status: NotificationStatus.INFO,
-      type: NotificationType.SYSTEM,
-    });
+    this.notificationService.createNotifications(
+      adminUserIds,
+      "payment.bank.pending",
+      {
+        message: `Пользователь ${req.user.email} создал заявку на банковское пополнение, ожидание оплаты`,
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+      }
+    );
 
     return { invoice, transaction };
   }
@@ -243,23 +249,25 @@ export class PaymentController {
         await this.transactionService.confirmTransactionAsUser(transaction_id);
 
       const adminUserIds = await this.userService.getAdminIds();
-      this.socketService.emitToUsers(
-        [...adminUserIds, req.user.id],
+      this.notificationService.createNotifications(
+        [req.user.id],
         "payment.bank.waiting-confirmation",
-        { msg: "Ожидание подтверждения пополнения админом", data: transaction }
+        {
+          message: "Ожидание подтверждения пополнения админом",
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+        }
       );
-      this.notificationService.createNotification(req.user.id, {
-        message: "Ожидание подтверждения пополнения админом",
-        status: NotificationStatus.INFO,
-        type: NotificationType.SYSTEM,
-      });
 
-      this.notificationService.createNotifications(adminUserIds, {
-        message:
-          "Пользователь ожидает вашего подтверждения платежа",
-        status: NotificationStatus.INFO,
-        type: NotificationType.SYSTEM,
-      });
+      this.notificationService.createNotifications(
+        adminUserIds,
+        "payment.bank.waiting-confirmation",
+        {
+          message: `Пользователь ${req.user.email} ожидает вашего подтверждения платежа`,
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+        }
+      );
 
       return transaction;
     } catch (error) {

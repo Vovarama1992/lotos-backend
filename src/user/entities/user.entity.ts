@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   OneToMany,
+  ManyToMany,
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { UserRole } from "src/constants";
@@ -60,12 +61,13 @@ export class User {
   zip: string;
 
   @ApiProperty({ example: 123, nullable: true })
-  @Column({ nullable: true })
-  referral_id: string;
+  @ManyToOne(() => User, (user) => user.referrals, {
+    cascade: true,
+  })
+  manager: User;
 
-  @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: "referral_id" })
-  referral: User;
+  @OneToMany(() => User, (user) => user.manager)
+  referrals: User[];
 
   @ApiProperty({ example: 100 })
   @Column({ type: "double precision", default: 200 })
@@ -84,7 +86,7 @@ export class User {
   phone: string;
 
   @ApiProperty({ example: "test@gmail.com", nullable: true })
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true })
   email: string;
 
   @ApiProperty({ example: false })
@@ -120,6 +122,8 @@ export class User {
   withdrawHistory: Withdraw[];
 
   @ApiProperty({ type: () => Notification, isArray: true })
-  @OneToMany(() => Notification, (notification) => notification.user, { cascade: true })
+  @OneToMany(() => Notification, (notification) => notification.user, {
+    cascade: true,
+  })
   notifications: Notification[];
 }

@@ -21,6 +21,10 @@ import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
 import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
 import { UserRole } from "src/constants";
 import { NotificationService } from "src/notification/notification.service";
+import {
+  NotificationStatus,
+  NotificationType,
+} from "src/notification/entities/notification.entity";
 
 @Injectable()
 export class UserService {
@@ -196,6 +200,29 @@ export class UserService {
     const currentBalance = await this.getBalance(user.id);
     const newBalance = currentBalance - withdrawTransaction.amount;
     const updatedUser = await this.changeBalance(user.id, newBalance);
+
+    const adminUserIds = await this.getAdminIds();
+
+    this.notificationService.createNotifications(
+      adminUserIds,
+      "withdraw.pending",
+      {
+        message: `Новая заявка на вывод средств от ${user.email}`,
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+      }
+    );
+
+    this.notificationService.createNotifications(
+      [user.id],
+      "withdraw.pending",
+      {
+        message: "Вы создали заявку на вывод средств",
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+      }
+    );
+
     return { ...withdrawTransaction, user: updatedUser };
   }
 
@@ -217,6 +244,28 @@ export class UserService {
       const currentBalance = await this.getBalance(user.id);
       const newBalance = currentBalance + withdrawTransaction.amount;
       updatedUser = await this.changeBalance(user.id, newBalance);
+
+      const adminUserIds = await this.getAdminIds();
+      this.notificationService.createNotifications(
+        adminUserIds,
+        "withdraw.cancelled",
+        {
+          message: `Заявка на вывод средств от ${user.email} была отменена`,
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+        }
+      );
+  
+      this.notificationService.createNotifications(
+        [user.id],
+        "withdraw.cancelled",
+        {
+          message: "Вы отменили заявку на вывод средств",
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+        }
+      );
+
     } else {
       throw error;
     }

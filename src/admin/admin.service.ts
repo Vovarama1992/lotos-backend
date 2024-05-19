@@ -19,6 +19,9 @@ import {
   NotificationStatus,
   NotificationType,
 } from "src/notification/entities/notification.entity";
+import * as bcrypt from "bcryptjs";
+import { CreateManagerDto } from "src/manager/dto/create-manager.dto";
+import { UserRole } from "src/constants";
 
 @Injectable()
 export class AdminService {
@@ -31,6 +34,19 @@ export class AdminService {
     private readonly notificationService: NotificationService
   ) {}
 
+  async createManagerAccount(createManagerDto: CreateManagerDto) {
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(
+      createManagerDto.password,
+      saltRounds
+    );
+    return await this.userService.saveUser({
+      role: UserRole.MANAGER,
+      email: createManagerDto.email,
+      password: hashedPassword,
+    });
+  }
+
   async sendMessageToUser(sendMessageToUserDto: SendMessageToUserDto) {
     this.socketService.emitToUsers(
       [sendMessageToUserDto.user_id],
@@ -38,11 +54,14 @@ export class AdminService {
       sendMessageToUserDto.message
     );
 
-    await this.notificationService.createNotification(sendMessageToUserDto.user_id, {
-      status: NotificationStatus.INFO,
-      type: NotificationType.ADMIN,
-      message: sendMessageToUserDto.message,
-    });
+    await this.notificationService.createNotification(
+      sendMessageToUserDto.user_id,
+      {
+        status: NotificationStatus.INFO,
+        type: NotificationType.ADMIN,
+        message: sendMessageToUserDto.message,
+      }
+    );
   }
 
   async getUserProfileById(userId: string) {

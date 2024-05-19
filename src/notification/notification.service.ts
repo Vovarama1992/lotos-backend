@@ -4,6 +4,7 @@ import { User } from "src/user/entities/user.entity";
 import { FindOptionsWhere, Repository } from "typeorm";
 import { CreateNotificationDto } from "./dto/create-notification.dto";
 import { Notification } from "./entities/notification.entity";
+import { SocketService } from "src/gateway/gateway.service";
 
 @Injectable()
 export class NotificationService {
@@ -11,18 +12,33 @@ export class NotificationService {
     @InjectRepository(Notification)
     private readonly notificationRepository: Repository<Notification>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    private readonly socketService: SocketService
   ) {}
 
-  async getNotifications(filter?: FindOptionsWhere<Notification> | FindOptionsWhere<Notification>[]){
-    return await this.notificationRepository.findAndCount({where: filter})
+  async getNotifications(
+    filter?: FindOptionsWhere<Notification> | FindOptionsWhere<Notification>[]
+  ) {
+    return await this.notificationRepository.findAndCount({
+      where: filter,
+      order: { timestamp: "DESC" },
+    });
   }
 
   async createNotifications(
     userIds: string[],
+    event: string,
     createNotificationDto: CreateNotificationDto
   ) {
-    const promises = userIds.map((userId)=>this.createNotification(userId, createNotificationDto));
+    const promises = userIds.map((userId) =>
+      this.createNotification(userId, createNotificationDto)
+    );
+    
+    this.socketService.emitToUsers(userIds, event, {
+      msg: createNotificationDto.message,
+      data: createNotificationDto,
+    });
+
     return Promise.all(promises);
   }
 
@@ -30,9 +46,10 @@ export class NotificationService {
     userId: string,
     createNotificationDto: CreateNotificationDto
   ) {
-    const user = await this.userRepository.findOneByOrFail({id: userId});
+    const user = await this.userRepository.findOneByOrFail({ id: userId });
     const notification = new Notification(createNotificationDto);
     notification.user = user;
+
     return await this.notificationRepository.save(notification);
   }
 
