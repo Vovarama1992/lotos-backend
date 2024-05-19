@@ -37,6 +37,7 @@ import { Notification } from "./notification/entities/notification.entity";
 import { ManagerModule } from './manager/manager.module';
 import { ReferralInviteModule } from './referral-invite/referral-invite.module';
 import { ReferralInvite } from "./referral-invite/entities/referral-invite.entity";
+import { GamePlacement } from "./games/entities/game-placement.entity";
 
 @Module({
   imports: [
@@ -53,7 +54,7 @@ import { ReferralInvite } from "./referral-invite/entities/referral-invite.entit
         password: configService.getOrThrow("POSTGRES_PASSWORD"),
         username: configService.getOrThrow("POSTGRES_USER"),
         autoLoadEntities: true,
-        entities: [User, Freespin, Card, GameHistory, Transaction, Notification, ReferralInvite],
+        entities: [User, Freespin, Card, GameHistory, Transaction, Notification, ReferralInvite, GamePlacement],
         database: configService.getOrThrow("POSTGRES_DB"),
         synchronize: configService.getOrThrow("TYPEORM_AUTOMIGRATE"),
         logging: configService.getOrThrow("TYPEORM_LOGGING"),
@@ -77,7 +78,7 @@ import { ReferralInvite } from "./referral-invite/entities/referral-invite.entit
     //MailModule
   ],
   controllers: [],
-  providers: [GamesService, RedisService, AppGateway, CryptocloudService],
+  providers: [RedisService, AppGateway, CryptocloudService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

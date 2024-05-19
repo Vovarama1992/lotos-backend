@@ -1,4 +1,4 @@
-import { Body, Get, Post } from '@nestjs/common';
+import { Body, Get, Param, Post } from '@nestjs/common';
 import { Controller } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { getLinkDTO } from './decorators/getLink.dto';
@@ -10,6 +10,11 @@ export class GamesController {
   @Get()
   async getData() {
     return await this.gamesService.getData();
+  }
+
+  @Get("/:category")
+  async getGamesInCategory(@Param("category") category: string) {
+    return await this.gamesService.getGamesInCategory(category);
   }
 
   @Get('/providers')

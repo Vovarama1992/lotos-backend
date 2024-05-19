@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
 import {
   ApiOkResponse,
   ApiOperation,
@@ -13,9 +23,7 @@ import {
   Transaction,
 } from "src/transaction/entities/transaction.entity";
 import { CancelWithdrawMoneyDto } from "src/user/dto/cancel-withdraw-money.dto";
-import {
-  GetWithdrawHistoryResponse
-} from "src/withdraw-history/entities/withdraw-history.entity";
+import { GetWithdrawHistoryResponse } from "src/withdraw-history/entities/withdraw-history.entity";
 import { AdminService } from "./admin.service";
 import { GetTransactionsQueryDto } from "./dto/get-transactions-query.dto";
 import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
@@ -24,6 +32,8 @@ import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 import { SendMessageToUserDto } from "./dto/send-message-to-user.dto";
 import { UserRole } from "src/constants";
 import { CreateManagerDto } from "src/manager/dto/create-manager.dto";
+import { AddGameToCategoryDto } from "./dto/add-game-to-category.dto";
+import { SaveGamesPlacementDto } from "./dto/save-games-placement.dto";
 
 @ApiTags("admin")
 @UseGuards(RolesGuard)
@@ -31,22 +41,39 @@ import { CreateManagerDto } from "src/manager/dto/create-manager.dto";
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-
-  @Post('send-message')
+  @Post("add-game-to-category")
   @Roles([UserRole.ADMIN])
-  sendMessageToUser(@Body() sendMessageToUserDto: SendMessageToUserDto){
+  addGameToCategory(@Body() addGameToCategoryDto: AddGameToCategoryDto) {
+    return this.adminService.addGameToCategory(addGameToCategoryDto);
+  }
+
+  @Patch("save-games-placement")
+  @Roles([UserRole.ADMIN])
+  saveGamesPlacement(@Body() saveGamesPlacementDto: SaveGamesPlacementDto) {
+    return this.adminService.saveGamesPlacement(saveGamesPlacementDto);
+  }
+
+  @Delete("delete-game-from-category/:id")
+  @Roles([UserRole.ADMIN])
+  deleteGameFromCategory(@Param("id") id: string) {
+    return this.adminService.deleteGameFromCategory(id);
+  }
+
+  @Post("send-message")
+  @Roles([UserRole.ADMIN])
+  sendMessageToUser(@Body() sendMessageToUserDto: SendMessageToUserDto) {
     return this.adminService.sendMessageToUser(sendMessageToUserDto);
   }
 
-  @Post('create-manager')
+  @Post("create-manager")
   @Roles([UserRole.ADMIN])
-  createManager(@Body() createManagerDto: CreateManagerDto){
+  createManager(@Body() createManagerDto: CreateManagerDto) {
     return this.adminService.createManagerAccount(createManagerDto);
   }
 
   @Get("user-profile/:id")
   @Roles([UserRole.ADMIN])
-  getUserProfileById(@Param('id') userId: string){
+  getUserProfileById(@Param("id") userId: string) {
     return this.adminService.getUserProfileById(userId);
   }
 

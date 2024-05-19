@@ -1,16 +1,11 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  JoinColumn,
-  OneToMany,
-} from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
-import { UserRole } from "src/constants";
-import { Transaction } from "src/transaction/entities/transaction.entity";
-import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { User } from "src/user/entities/user.entity";
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn
+} from "typeorm";
 
 export enum NotificationType {
   SYSTEM = "system",
