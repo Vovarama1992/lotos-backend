@@ -124,6 +124,7 @@ export class User {
   @ApiProperty({ type: () => Notification, isArray: true })
   @OneToMany(() => Notification, (notification) => notification.user, {
     cascade: true,
+    onDelete: "CASCADE",
   })
   notifications: Notification[];
 }

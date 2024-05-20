@@ -8,10 +8,11 @@ import { RedisService } from "src/redis/redis.service";
 import { NotificationModule } from "src/notification/notification.module";
 import { GamePlacement } from "src/games/entities/game-placement.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { User } from "src/user/entities/user.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([GamePlacement]),
+    TypeOrmModule.forFeature([GamePlacement, User]),
     TransactionModule,
     WithdrawHistoryModule,
     UsersModule,

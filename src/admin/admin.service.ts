@@ -28,6 +28,7 @@ import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto
 import { SaveGamesPlacementDto } from "./dto/save-games-placement.dto";
 import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 import { SendMessageToUserDto } from "./dto/send-message-to-user.dto";
+import { User } from "src/user/entities/user.entity";
 
 @Injectable()
 export class AdminService {
@@ -39,8 +40,22 @@ export class AdminService {
     private readonly socketService: SocketService,
     private readonly notificationService: NotificationService,
     @InjectRepository(GamePlacement)
-    private readonly gamePlacementRepository: Repository<GamePlacement>
+    private readonly gamePlacementRepository: Repository<GamePlacement>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>
   ) {}
+
+  async deleteManager(userId: string){
+    const user = await this.userRepository.findOneByOrFail({id:userId});
+    return this.userRepository.remove(user);
+  }
+
+  async getManagers() {
+    const [data, count] = await this.userRepository.findAndCount({
+      where: { role: UserRole.MANAGER },
+    });
+    return { count, data };
+  }
 
   async saveGamesPlacement(saveGamesPlacementDto: SaveGamesPlacementDto) {
     const category = saveGamesPlacementDto.category;
@@ -51,10 +66,10 @@ export class AdminService {
     });
 
     saveGamesPlacementDto.games.forEach((game) => {
-      const idx = games.findIndex((el) => el.id === game.game_placement_id)
-      if (idx===-1) {
+      const idx = games.findIndex((el) => el.id === game.game_placement_id);
+      if (idx === -1) {
         error = true;
-      }else{
+      } else {
         (game as any).id = games[idx].id;
       }
     });
@@ -62,7 +77,7 @@ export class AdminService {
     if (error) throw new BadRequestException("Одной из игр не существует");
 
     const savePromises = saveGamesPlacementDto.games.map((game) => {
-      console.log(game)
+      console.log(game);
       const gamePlacement = new GamePlacement({ ...game, category });
       return this.gamePlacementRepository.save(gamePlacement);
     });

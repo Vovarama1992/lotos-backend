@@ -41,6 +41,18 @@ import { SaveGamesPlacementDto } from "./dto/save-games-placement.dto";
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+  @Get("managers")
+  @Roles([UserRole.ADMIN])
+  getManagers() {
+    return this.adminService.getManagers();
+  }
+
+  @Delete("managers/:id")
+  @Roles([UserRole.ADMIN])
+  deleteManager(@Param("id") id: string) {
+    return this.adminService.deleteManager(id);
+  }
+
   @Post("add-game-to-category")
   @Roles([UserRole.ADMIN])
   addGameToCategory(@Body() addGameToCategoryDto: AddGameToCategoryDto) {
