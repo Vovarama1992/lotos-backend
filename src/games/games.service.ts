@@ -32,7 +32,7 @@ export class GamesService {
     const response = await axios.post(process.env.HALL_API, requestBody, {
       headers: { "Content-Type": "application/json" },
     });
-    console.log(response)
+    console.log(response.data)
     await this.redisService.del("gameLabels");
     await this.redisService.del("apiData");
     await this.redisService.set(
