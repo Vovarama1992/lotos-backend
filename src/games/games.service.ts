@@ -27,9 +27,7 @@ export class GamesService {
     const requestBody = {
       hall: "3203325",
       key: "kvadder",
-      cmd: "gamesList",
-      cdnUrl: "",
-      img: "game_img_2",
+      cmd: "gamesList"
     };
     const response = await axios.post(process.env.HALL_API, requestBody, {
       headers: { "Content-Type": "application/json" },
