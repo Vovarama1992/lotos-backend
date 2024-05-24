@@ -10,18 +10,19 @@ import { verify } from "jsonwebtoken";
 import { Server, Socket } from "socket.io";
 import { SocketService } from "./gateway/gateway.service";
 
-@WebSocketGateway({cors: {origin: ["http://localhost:5173"]}})
+@WebSocketGateway({
+  cors: { origin: ["http://localhost:5173", "http://95.213.173.58:5173"] },
+})
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
-    private socketService: SocketService,
+    private socketService: SocketService
     //private userService: UserService
   ) {}
 
   @WebSocketServer() public server: Server;
   private logger: Logger = new Logger("AppGateway");
-
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
