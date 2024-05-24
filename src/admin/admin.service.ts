@@ -29,6 +29,7 @@ import { SaveGamesPlacementDto } from "./dto/save-games-placement.dto";
 import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 import { SendMessageToUserDto } from "./dto/send-message-to-user.dto";
 import { User } from "src/user/entities/user.entity";
+import { BroadcastMessageDto } from "./dto/broadcast-message.dto";
 
 @Injectable()
 export class AdminService {
@@ -45,8 +46,24 @@ export class AdminService {
     private readonly userRepository: Repository<User>
   ) {}
 
-  async deleteManager(userId: string){
-    const user = await this.userRepository.findOneByOrFail({id:userId});
+  async broadCastMessage(broadCastMessageDto: BroadcastMessageDto) {
+    const userIds = (
+      await this.userRepository.find({ select: { id: true } })
+    ).map((user) => user.id);
+
+    await this.notificationService.createNotifications(
+      userIds,
+      "admin-message",
+      {
+        status: NotificationStatus.INFO,
+        type: NotificationType.ADMIN,
+        message: broadCastMessageDto.message,
+      }
+    );
+  }
+
+  async deleteManager(userId: string) {
+    const user = await this.userRepository.findOneByOrFail({ id: userId });
     return this.userRepository.remove(user);
   }
 

@@ -8,15 +8,44 @@ import { GetWithdrawHistoryQueryDto } from "src/admin/dto/get-withdraw-history-q
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/user/entities/user.entity";
 import { Repository } from "typeorm";
+import { BroadcastMessageDto } from "src/admin/dto/broadcast-message.dto";
+import { NotificationService } from "src/notification/notification.service";
+import {
+  NotificationStatus,
+  NotificationType,
+} from "src/notification/entities/notification.entity";
 
 @Injectable()
 export class ManagerService {
   constructor(
     private readonly transactionService: TransactionService,
     private readonly withdrawService: WithdrawHistoryService,
+    private readonly notificationService: NotificationService,
+
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>
   ) {}
+
+  async broadCastMessage(
+    managerId: string,
+    broadCastMessageDto: BroadcastMessageDto
+  ) {
+    const userIds = (
+      await this.usersRepository.find({
+        where: { manager: { id: managerId } },
+      })
+    ).map((user) => user.id);
+
+    await this.notificationService.createNotifications(
+      userIds,
+      "admin-message",
+      {
+        status: NotificationStatus.INFO,
+        type: NotificationType.ADMIN,
+        message: broadCastMessageDto.message,
+      }
+    );
+  }
 
   async getAllReferrals(managerId: string) {
     const [data, count] = await this.usersRepository.findAndCount({

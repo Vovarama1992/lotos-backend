@@ -21,6 +21,7 @@ import { GetTransactionResponse } from "src/transaction/entities/transaction.ent
 import { GetTransactionsQueryDto } from "src/admin/dto/get-transactions-query.dto";
 import { GetWithdrawHistoryResponse } from "src/withdraw-history/entities/withdraw-history.entity";
 import { GetWithdrawHistoryQueryDto } from "src/admin/dto/get-withdraw-history-query.dto";
+import { BroadcastMessageDto } from "src/admin/dto/broadcast-message.dto";
 
 @Controller("manager")
 @UseGuards(RolesGuard)
@@ -29,7 +30,9 @@ export class ManagerController {
 
   @Get("transactions")
   @Roles([UserRole.MANAGER])
-  @ApiOperation({ summary: "Менеджер - получить все транзакции рефералов на пополнение" })
+  @ApiOperation({
+    summary: "Менеджер - получить все транзакции рефералов на пополнение",
+  })
   @ApiResponse({
     status: 403,
     description: "Пользователь не авторизован, либо нет прав доступа",
@@ -54,7 +57,10 @@ export class ManagerController {
     description: "Транзакции на вывод",
     type: GetWithdrawHistoryResponse,
   })
-  getWithdrawHistory(@Query() query: GetWithdrawHistoryQueryDto,@Req() req: any) {
+  getWithdrawHistory(
+    @Query() query: GetWithdrawHistoryQueryDto,
+    @Req() req: any
+  ) {
     return this.managerService.getAllWithdrawTransactions(req.user.id, query);
   }
 
@@ -71,5 +77,17 @@ export class ManagerController {
   })
   getAllReferrals(@Req() req: any) {
     return this.managerService.getAllReferrals(req.user.id);
+  }
+
+  @Post("broadcast-message")
+  @Roles([UserRole.MANAGER])
+  broadcastMessage(
+    @Body() broadcastMessageDto: BroadcastMessageDto,
+    @Req() req: any
+  ) {
+    return this.managerService.broadCastMessage(
+      req.user.id,
+      broadcastMessageDto
+    );
   }
 }

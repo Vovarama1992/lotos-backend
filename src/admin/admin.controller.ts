@@ -34,6 +34,7 @@ import { UserRole } from "src/constants";
 import { CreateManagerDto } from "src/manager/dto/create-manager.dto";
 import { AddGameToCategoryDto } from "./dto/add-game-to-category.dto";
 import { SaveGamesPlacementDto } from "./dto/save-games-placement.dto";
+import { BroadcastMessageDto } from "./dto/broadcast-message.dto";
 
 @ApiTags("admin")
 @UseGuards(RolesGuard)
@@ -75,6 +76,12 @@ export class AdminController {
   @Roles([UserRole.ADMIN])
   sendMessageToUser(@Body() sendMessageToUserDto: SendMessageToUserDto) {
     return this.adminService.sendMessageToUser(sendMessageToUserDto);
+  }
+
+  @Post("broadcast-message")
+  @Roles([UserRole.ADMIN])
+  broadCastMessage(@Body() broadCastMessageDto: BroadcastMessageDto) {
+    return this.adminService.broadCastMessage(broadCastMessageDto);
   }
 
   @Post("create-manager")
