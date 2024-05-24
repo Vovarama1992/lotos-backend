@@ -1,11 +1,16 @@
-import { Body, Get, Param, Post } from '@nestjs/common';
-import { Controller } from '@nestjs/common';
-import { GamesService } from './games.service';
-import { getLinkDTO } from './decorators/getLink.dto';
+import { Body, Get, Param, Post } from "@nestjs/common";
+import { Controller } from "@nestjs/common";
+import { GamesService } from "./games.service";
+import { getLinkDTO } from "./decorators/getLink.dto";
 
-@Controller('games')
+@Controller("games")
 export class GamesController {
   constructor(private gamesService: GamesService) {}
+
+  @Get("/providers")
+  getAllProviders() {
+    return this.gamesService.getProviders();
+  }
 
   @Get()
   async getData() {
@@ -17,17 +22,12 @@ export class GamesController {
     return await this.gamesService.getGamesInCategory(category);
   }
 
-  @Get('/providers')
-  async getProviders() {
-    return await this.gamesService.getProviders();
-  }
-
-  @Post('/gameLink')
+  @Post("/gameLink")
   async getGameLink(@Body() getLink: getLinkDTO) {
     return await this.gamesService.openGame(getLink);
   }
 
-  @Post('/update')
+  @Post("/update")
   async fetchData() {
     return await this.gamesService.fetchData();
   }

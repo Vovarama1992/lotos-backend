@@ -2,29 +2,27 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { UserResponse } from "./type/userResponse";
 
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, TypeORMError, getConnection } from "typeorm";
-import { User } from "./entities/user.entity";
-import { SendMoneyDTO } from "./decorators/sendMoney.dto";
-import { SocketService } from "src/gateway/gateway.service";
-import { CreateTransactionDto } from "./dto/create-transaction.dto";
-import {
-  Transaction,
-  TransactionStatus,
-} from "src/transaction/entities/transaction.entity";
-import { WithdrawMoneyDto } from "./dto/withdraw-money.dto";
-import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
-import {
-  Withdraw,
-  WithdrawStatus,
-} from "src/withdraw-history/entities/withdraw-history.entity";
-import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
-import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
 import { UserRole } from "src/constants";
-import { NotificationService } from "src/notification/notification.service";
+import { SocketService } from "src/gateway/gateway.service";
 import {
   NotificationStatus,
   NotificationType,
 } from "src/notification/entities/notification.entity";
+import { NotificationService } from "src/notification/notification.service";
+import {
+  Transaction,
+  TransactionStatus,
+} from "src/transaction/entities/transaction.entity";
+import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
+import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
+import { Repository } from "typeorm";
+import { SendMoneyDTO } from "./decorators/sendMoney.dto";
+import { CreateTransactionDto } from "./dto/create-transaction.dto";
+import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
+import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
+import { WithdrawMoneyDto } from "./dto/withdraw-money.dto";
+import { User } from "./entities/user.entity";
+import * as moment from "moment";
 
 @Injectable()
 export class UserService {
@@ -69,7 +67,20 @@ export class UserService {
     updateUserProfileDto: UpdateUserProfileDto
   ) {
     const user = await this.usersRepository.findOneByOrFail({ id: userId });
+    let parsedDob = null;
+    if (updateUserProfileDto.dob) {
+      parsedDob = moment(updateUserProfileDto.dob);
+      if (!(parsedDob as moment.Moment).isValid()) {
+        throw new BadRequestException('Некорректный формат даты');
+      } else {
+        parsedDob = (parsedDob as moment.Moment).toISOString();
+      }
+    }
+
     const updatedUser: User = { ...user, ...updateUserProfileDto };
+    if (parsedDob) {
+      updatedUser.dob = parsedDob;
+    }
     return await this.usersRepository.save(updatedUser);
   }
 
@@ -255,7 +266,7 @@ export class UserService {
           type: NotificationType.SYSTEM,
         }
       );
-  
+
       this.notificationService.createNotifications(
         [user.id],
         "withdraw.cancelled",
@@ -265,7 +276,6 @@ export class UserService {
           type: NotificationType.SYSTEM,
         }
       );
-
     } else {
       throw error;
     }

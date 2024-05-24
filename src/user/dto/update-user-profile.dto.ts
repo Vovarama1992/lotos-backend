@@ -59,9 +59,9 @@ export class UpdateUserProfileDto {
   @IsNotEmpty()
   zip?: string;
 
-  @ApiProperty({ example: new Date(), required: false, type: Date })
+  @ApiProperty({ example: '24.05.2024', required: false, type: Date })
   @IsOptional()
-  @IsDateString()
+  @IsString()
   @IsNotEmpty()
   dob?: string;
 

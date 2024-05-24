@@ -15,6 +15,7 @@ import {
           const res = context.switchToHttp().getResponse();
           const { tokens } = data;
   
+          //console.log("cookie")
           res.cookie('refreshToken', tokens?.refreshToken, {
             httpOnly: true,
             maxAge: 1000 * 60 * 60 * 24 * 7, 

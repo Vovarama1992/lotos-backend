@@ -13,6 +13,7 @@ export class AuthMiddleware implements NestMiddleware {
     const accessToken = bearerHeader && bearerHeader.split(' ')[1];
     let user;
 
+
     if (!bearerHeader || !accessToken) {
       return next();
     }

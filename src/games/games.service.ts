@@ -32,7 +32,6 @@ export class GamesService {
     const response = await axios.post(process.env.HALL_API, requestBody, {
       headers: { "Content-Type": "application/json" },
     });
-    console.log(JSON.stringify(response.data.content.gameLabels));
     await this.redisService.del("gameLabels");
     await this.redisService.del("apiData");
     await this.redisService.set(
@@ -71,7 +70,6 @@ export class GamesService {
 
   async getProviders() {
     const cachedData = await this.redisService.get("gameLabels");
-    console.log(cachedData)
     return cachedData ? JSON.parse(cachedData) : null;
   }
 
