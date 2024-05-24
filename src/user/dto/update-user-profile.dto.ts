@@ -67,7 +67,7 @@ export class UpdateUserProfileDto {
 
   @ApiProperty({ example: "+79991234567", required: false })
   @IsOptional()
-  @IsDateString()
+  @IsString()
   @IsNotEmpty()
   phone?: string;
 
