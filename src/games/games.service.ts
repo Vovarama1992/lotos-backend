@@ -63,7 +63,6 @@ export class GamesService {
   }
 
   async getData() {
-    await this.fetchData();
     const cachedData = await this.redisService.get("apiData");
     return cachedData ? JSON.parse(cachedData) : null;
   }
