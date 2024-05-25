@@ -11,7 +11,7 @@ import { Server, Socket } from "socket.io";
 import { SocketService } from "./gateway/gateway.service";
 
 @WebSocketGateway({
-  cors: { origin: ["http://localhost:5173", "http://95.213.173.58:5173"] },
+  cors: { origin: ["http://localhost:5173", "http://95.213.173.58:5173", "https://adarfawerf.ru"] },
 })
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
