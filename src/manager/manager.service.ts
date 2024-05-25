@@ -51,7 +51,7 @@ export class ManagerService {
     const [data, count] = await this.usersRepository.findAndCount({
       where: { manager: { id: managerId } },
     });
-    return { count, data };
+    return data;
   }
 
   async getTransactions(managerId: string, filter: GetTransactionsQueryDto) {
