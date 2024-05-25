@@ -2,9 +2,21 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
+import { readFileSync } from "fs";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  let httpsOptions = {};
+  console.log(process.env.ENV)
+  if (process.env.ENV !== "dev") {
+    httpsOptions = {
+      key: readFileSync(process.env.SSL_KEY_PATH),
+      cert: readFileSync(process.env.SSL_CERT_PATH),
+    };
+  }
+
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions,
+  });
   app.setGlobalPrefix("api");
 
   const config = new DocumentBuilder()
@@ -22,7 +34,7 @@ async function bootstrap() {
       "http://lotos.na4u.ru",
       "http://95.213.173.58:5173",
       "http://adarfawerf.ru",
-      "https://adarfawerf.ru"
+      "https://adarfawerf.ru",
     ],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
