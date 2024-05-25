@@ -21,6 +21,8 @@ async function bootstrap() {
       "http://localhost:5173",
       "http://lotos.na4u.ru",
       "http://95.213.173.58:5173",
+      "http://adarfawerf.ru",
+      "https://adarfawerf.ru"
     ],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
