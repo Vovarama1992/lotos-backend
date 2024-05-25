@@ -11,7 +11,7 @@ import { Server, Socket } from "socket.io";
 import { SocketService } from "./gateway/gateway.service";
 
 @WebSocketGateway({
-  cors: { origin: ["http://localhost:5173", "http://95.213.173.58:5173", "https://adarfawerf.ru"] },
+  cors: { origin: ["http://localhost:5173", "http://95.213.173.58:5173", "https://adarfawerf.ru"]},
 })
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -26,10 +26,12 @@ export class AppGateway
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+    console.log('Client disconnected')
   }
 
   handleConnection(client: Socket, ...args: any[]) {
     this.logger.log(`Client connected: ${client.id}`);
+    console.log('Client connected')
   }
 
   afterInit(server: Server) {
@@ -42,7 +44,8 @@ export class AppGateway
         const user = verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
         userId = user.userId;
       } catch (error) {
-        socket.disconnect();
+        console.log("Not authorized")
+        socket.disconnect(true);
       }
 
       socket.join(userId);
