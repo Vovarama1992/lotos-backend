@@ -3,6 +3,9 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
 import { readFileSync } from "fs";
+import * as express from "express"
+import { ExpressAdapter } from "@nestjs/platform-express";
+const expressInstance = express();
 
 async function bootstrap() {
   let httpsOptions = {};
@@ -13,7 +16,7 @@ async function bootstrap() {
     };
   }
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(expressInstance), {
     cors: {
       origin: [
         "http://localhost:5173",
