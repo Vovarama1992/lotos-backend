@@ -6,16 +6,27 @@ import { readFileSync } from "fs";
 
 async function bootstrap() {
   let httpsOptions = {};
-  console.log(process.env.ENV)
   if (process.env.ENV !== "dev") {
     httpsOptions = {
       key: readFileSync(process.env.SSL_KEY_PATH),
       cert: readFileSync(process.env.SSL_CERT_PATH),
     };
-    console.log(httpsOptions)
   }
 
   const app = await NestFactory.create(AppModule, {
+    cors: {
+      origin: [
+        "http://localhost:5173",
+        "http://lotos.na4u.ru",
+        "http://95.213.173.58:5173",
+        "http://adarfawerf.ru",
+        "https://adarfawerf.ru",
+      ],
+      methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      exposedHeaders: ["Authorization"],
+      credentials: true,
+    },
     httpsOptions,
   });
   app.setGlobalPrefix("api");
@@ -29,17 +40,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("docs", app, document);
 
-  app.enableCors({
-    origin: [
-      "http://localhost:5173",
-      "http://lotos.na4u.ru",
-      "http://95.213.173.58:5173",
-      "http://adarfawerf.ru",
-      "https://adarfawerf.ru",
-    ],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-  });
   // global validation
   app.useGlobalPipes(
     new ValidationPipe({ forbidNonWhitelisted: true, transform: true })
