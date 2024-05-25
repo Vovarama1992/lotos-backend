@@ -5,12 +5,13 @@ import { ValidationPipe } from "@nestjs/common";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix("api");
 
   const config = new DocumentBuilder()
     .setTitle("Casino backend")
     .setDescription("Описание API")
     .setVersion("1.2")
-    .addTag('admin', 'Админ')
+    .addTag("admin", "Админ")
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("docs", app, document);
@@ -25,7 +26,9 @@ async function bootstrap() {
     allowedHeaders: ["Content-Type", "Authorization"],
   });
   // global validation
-  app.useGlobalPipes(new ValidationPipe({forbidNonWhitelisted: true, transform: true}));
+  app.useGlobalPipes(
+    new ValidationPipe({ forbidNonWhitelisted: true, transform: true })
+  );
   //app.useWebSocketAdapter(new WsAdapter(app))
   await app.listen(process.env.PORT);
 }
