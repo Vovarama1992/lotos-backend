@@ -61,10 +61,6 @@ export class AuthController {
         loginUserDto.referral_invitation_id
       );
 
-      if(referralInvitation.is_used){
-        throw new ForbiddenException('Реферальная ссылка уже была использована!')
-      }
-
       await this.referralInviteService.acceptReferralInvitation(loginUserDto.referral_invitation_id);
       manager = referralInvitation.manager;
 
