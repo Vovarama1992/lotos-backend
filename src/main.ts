@@ -3,20 +3,22 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
 import { readFileSync } from "fs";
-import * as express from "express"
-import { ExpressAdapter } from "@nestjs/platform-express";
-const expressInstance = express();
+// import * as express from "express"
+// import { ExpressAdapter } from "@nestjs/platform-express";
+//const expressInstance = express();
 
 async function bootstrap() {
   let httpsOptions = {};
   if (process.env.ENV !== "dev") {
     httpsOptions = {
-      key: readFileSync(process.env.SSL_KEY_PATH),
-      cert: readFileSync(process.env.SSL_CERT_PATH),
+      httpsOptions: {
+        key: readFileSync(process.env.SSL_KEY_PATH),
+        cert: readFileSync(process.env.SSL_CERT_PATH),
+      },
     };
   }
 
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(expressInstance), {
+  const app = await NestFactory.create(AppModule, {
     cors: {
       origin: [
         "http://localhost:5173",
@@ -31,9 +33,8 @@ async function bootstrap() {
       exposedHeaders: ["Authorization"],
       credentials: true,
     },
-    httpsOptions,
+    ...httpsOptions,
   });
-  app.setGlobalPrefix("api");
 
   const config = new DocumentBuilder()
     .setTitle("Casino backend")
@@ -43,6 +44,8 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("docs", app, document);
+
+  app.setGlobalPrefix("api");
 
   // global validation
   app.useGlobalPipes(
