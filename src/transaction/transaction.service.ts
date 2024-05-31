@@ -79,6 +79,9 @@ export class TransactionService {
       where: {
         ...filter,
       },
+      order: {
+        timestamp: "DESC",
+      },
       relations: { user: options?.includeUser },
     });
   }
