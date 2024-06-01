@@ -33,7 +33,7 @@ export class NotificationService {
     const promises = userIds.map((userId) =>
       this.createNotification(userId, createNotificationDto)
     );
-    
+
     this.socketService.emitToUsers(userIds, event, {
       msg: createNotificationDto.message,
       data: createNotificationDto,
@@ -47,7 +47,11 @@ export class NotificationService {
     createNotificationDto: CreateNotificationDto
   ) {
     const user = await this.userRepository.findOneByOrFail({ id: userId });
-    const notification = new Notification(createNotificationDto);
+    const notificationData = JSON.stringify(createNotificationDto.data);
+    const notification = new Notification({
+      ...createNotificationDto,
+      data: notificationData || null,
+    });
     notification.user = user;
 
     return await this.notificationRepository.save(notification);

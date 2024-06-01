@@ -38,6 +38,7 @@ import {
   NotificationStatus,
   NotificationType,
 } from "src/notification/entities/notification.entity";
+import { SocketEvent } from "src/constants";
 
 @ApiTags("payment")
 @UseGuards(RolesGuard)
@@ -87,22 +88,28 @@ export class PaymentController {
     const adminUserIds = await this.userService.getAdminIds();
     this.notificationService.createNotifications(
       [req.user.id],
-      "payment.crypto.pending",
+      SocketEvent.PAYMENT_CRYPTO_PENDING,
       {
         message: "Ожидание оплаты через криптоэквайринг",
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
+        data: {
+          transaction_id: transaction.id,
+        },
       }
     );
 
     this.notificationService.createNotifications(
       adminUserIds,
-      "payment.crypto.pending",
+      SocketEvent.PAYMENT_CRYPTO_PENDING,
       {
         message:
           "Пользователь создал новую заявку на пополнение через криптоэквайринг",
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
+        data: {
+          transaction_id: transaction.id,
+        },
       }
     );
 
@@ -127,33 +134,39 @@ export class PaymentController {
 
     if (status === "success") {
       const invoice = invoicesData.result[0];
-      console.log(invoice);
       const amountInFiat = invoice.amount_in_fiat;
       const userId = invoice.order_id;
       const currentBalance = await this.userService.getBalance(userId);
       const newBalance = currentBalance + amountInFiat;
       const user = await this.userService.changeBalance(userId, newBalance);
-      await this.transactionService.completeTransactionByInvoiceId(
-        invoice.uuid
-      );
+      const transaction =
+        await this.transactionService.completeTransactionByInvoiceId(
+          invoice.uuid
+        );
       const adminUserIds = await this.userService.getAdminIds();
       this.notificationService.createNotifications(
         [userId],
-        "payment.crypto.success",
+        SocketEvent.PAYMENT_CRYPTO_SUCCESS,
         {
           message: "Вы успешно пополнили счёт через криптоэквайринг",
           status: NotificationStatus.INFO,
           type: NotificationType.SYSTEM,
+          data: {
+            transaction_id: transaction.id,
+          },
         }
       );
 
       this.notificationService.createNotifications(
         adminUserIds,
-        "payment.crypto.success",
+        SocketEvent.PAYMENT_CRYPTO_SUCCESS,
         {
           message: `Пользователь ${user.email} успешно пополнил счёт через криптоэквайринг`,
           status: NotificationStatus.INFO,
           type: NotificationType.SYSTEM,
+          data: {
+            transaction_id: transaction.id,
+          },
         }
       );
     }
@@ -204,21 +217,27 @@ export class PaymentController {
     const adminUserIds = await this.userService.getAdminIds();
     this.notificationService.createNotifications(
       [req.user.id],
-      "payment.bank.pending",
+      SocketEvent.PAYMENT_BANK_PENDING,
       {
         message: "Вы создали заявку на банковское пополнение, ожидание оплаты",
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
+        data: {
+          transaction_id: transaction.id,
+        },
       }
     );
 
     this.notificationService.createNotifications(
       adminUserIds,
-      "payment.bank.pending",
+      SocketEvent.PAYMENT_BANK_PENDING,
       {
         message: `Пользователь ${req.user.email} создал заявку на банковское пополнение, ожидание оплаты`,
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
+        data: {
+          transaction_id: transaction.id,
+        },
       }
     );
 
@@ -251,21 +270,27 @@ export class PaymentController {
       const adminUserIds = await this.userService.getAdminIds();
       this.notificationService.createNotifications(
         [req.user.id],
-        "payment.bank.waiting-confirmation",
+        SocketEvent.PAYMENT_BANK_WAITING_CONFIRMATION,
         {
           message: "Ожидание подтверждения пополнения админом",
           status: NotificationStatus.INFO,
           type: NotificationType.SYSTEM,
+          data: {
+            transaction_id: transaction.id,
+          },
         }
       );
 
       this.notificationService.createNotifications(
         adminUserIds,
-        "payment.bank.waiting-confirmation",
+        SocketEvent.PAYMENT_BANK_WAITING_CONFIRMATION,
         {
           message: `Пользователь ${req.user.email} ожидает вашего подтверждения платежа`,
           status: NotificationStatus.INFO,
           type: NotificationType.SYSTEM,
+          data: {
+            transaction_id: transaction.id,
+          },
         }
       );
 

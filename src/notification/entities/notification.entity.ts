@@ -1,11 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { User } from "src/user/entities/user.entity";
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn
-} from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 export enum NotificationType {
   SYSTEM = "system",
@@ -35,6 +30,10 @@ export class Notification {
   @ApiProperty({ type: "string" })
   @Column()
   message: string;
+
+  @ApiProperty({ type: "string" })
+  @Column({ type: "json", nullable: true })
+  data?: string;
 
   @ApiProperty({ enum: NotificationStatus })
   @Column({ enum: NotificationStatus })

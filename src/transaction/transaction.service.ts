@@ -36,7 +36,7 @@ export class TransactionService {
     const transaction = await this.getTransactionByInvoiceId(invoiceId);
 
     transaction.status = TransactionStatus.SUCCESS;
-    await this.transactionsRepository.save(transaction);
+    return await this.transactionsRepository.save(transaction);
   }
 
   async confirmTransactionAsUser(transactionId: string) {

@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcryptjs";
-import { UserRole } from "src/constants";
+import { SocketEvent, UserRole } from "src/constants";
 import { GamePlacement } from "src/games/entities/game-placement.entity";
 import { SocketService } from "src/gateway/gateway.service";
 import { CreateManagerDto } from "src/manager/dto/create-manager.dto";
@@ -16,7 +16,7 @@ import {
 } from "src/notification/entities/notification.entity";
 import { NotificationService } from "src/notification/notification.service";
 import { RedisService } from "src/redis/redis.service";
-import { TransactionStatus } from "src/transaction/entities/transaction.entity";
+import { Transaction, TransactionStatus } from "src/transaction/entities/transaction.entity";
 import { TransactionService } from "src/transaction/transaction.service";
 import { UserService } from "src/user/user.service";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
@@ -216,16 +216,19 @@ export class AdminService {
         const currentBalance = await this.userService.getBalance(userId);
         const newBalance = currentBalance + transaction.amount;
         await this.userService.changeBalance(userId, newBalance);
-        this.socketService.emitToUsers([userId], "payment.bank.success", {
-          msg: "Успешное банковское пополнение средств",
-          data: transaction,
-        });
 
-        await this.notificationService.createNotification(userId, {
-          status: NotificationStatus.INFO,
-          type: NotificationType.SYSTEM,
-          message: "Вы успешно пополнили свой баланс",
-        });
+        await this.notificationService.createNotifications(
+          [userId],
+          SocketEvent.PAYMENT_BANK_SUCCESS,
+          {
+            status: NotificationStatus.INFO,
+            type: NotificationType.SYSTEM,
+            message: `Вы успешно пополнили свой баланс на ${(transaction as Transaction).amount} RUB`,
+            data: {
+              transaction_id: transaction_id,
+            },
+          }
+        );
       } else {
         error = new ForbiddenException(
           "Can not confirm transaction! User must confirm transaction first!"
@@ -268,16 +271,18 @@ export class AdminService {
         newBalance
       );
 
-      this.socketService.emitToUsers([userId], "withdraw.cancelled", {
-        msg: "Заявка на вывод средств была отменена",
-        data: withdrawTransaction,
-      });
-
-      await this.notificationService.createNotification(userId, {
-        status: NotificationStatus.INFO,
-        type: NotificationType.SYSTEM,
-        message: "Не удалось вывести деньги. Ваша заявка была отклонена.",
-      });
+      await this.notificationService.createNotifications(
+        [userId],
+        SocketEvent.WITHDRAW_CANCELLED,
+        {
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+          message: `Не удалось вывести деньги. Ваша заявка была отклонена.`,
+          data: {
+            withdraw_transaction_id: withdrawTransactionId,
+          },
+        }
+      );
 
       return { ...withdrawTransaction, user: updatedUser };
     }
@@ -300,16 +305,20 @@ export class AdminService {
       throw error;
     } else {
       const userId = withdrawTransaction.user.id;
-      this.socketService.emitToUsers([userId], "withdraw.success", {
-        msg: "Заявка на вывод средств была исполнена",
-        data: withdrawTransaction,
-      });
 
-      await this.notificationService.createNotification(userId, {
-        status: NotificationStatus.INFO,
-        type: NotificationType.SYSTEM,
-        message: "Заявка на вывод средств была исполнена",
-      });
+      await this.notificationService.createNotifications(
+        [userId],
+        SocketEvent.WITHDRAW_SUCCESS,
+        {
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+          message: `Заявка на вывод средств была исполнена. Выведено ${withdrawTransaction.amount} RUB`,
+          data: {
+            withdraw_transaction_id: withdrawTransactionId,
+          },
+        }
+      );
+      
       return withdrawTransaction;
     }
   }
