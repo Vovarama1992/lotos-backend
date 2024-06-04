@@ -12,7 +12,12 @@ export class WithdrawHistoryService {
   ) {}
 
   async createWithdrawTransaction(createWithdrawDto: CreateWithdrawDto) {
-    const withdraw = new Withdraw(createWithdrawDto);
+    const { payment_details, ...data } = createWithdrawDto;
+    const withdraw = new Withdraw({
+      ...data,
+      card: payment_details?.card,
+      sbp: payment_details?.sbp,
+    });
     return await this.withdrawRepository.save(withdraw);
   }
 

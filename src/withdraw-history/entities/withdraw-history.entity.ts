@@ -8,6 +8,11 @@ export enum WithdrawStatus {
   PENDING = "pending",
 }
 
+export enum WithdrawMethod {
+  CARD = "card",
+  SBP = "sbp",
+}
+
 @Entity("withdrawHistory")
 export class Withdraw {
   @ApiProperty()
@@ -25,6 +30,16 @@ export class Withdraw {
   @ApiProperty()
   @Column()
   amount: number;
+
+  @ApiProperty()
+  @Column({ nullable: true, enum: WithdrawMethod })
+  method: WithdrawMethod;
+
+  @Column({ nullable: true })
+  card: string;
+
+  @Column({ nullable: true })
+  sbp: string;
 
   @ApiProperty({ enum: WithdrawStatus })
   @Column({
