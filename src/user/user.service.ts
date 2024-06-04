@@ -71,7 +71,7 @@ export class UserService {
     if (updateUserProfileDto.dob) {
       parsedDob = moment(updateUserProfileDto.dob);
       if (!(parsedDob as moment.Moment).isValid()) {
-        throw new BadRequestException('Некорректный формат даты');
+        throw new BadRequestException("Некорректный формат даты");
       } else {
         parsedDob = (parsedDob as moment.Moment).toISOString();
       }
@@ -198,6 +198,20 @@ export class UserService {
     this.socketService.emitToUser(id, "balanceUpdated", {
       balance: user.balance,
     });
+    return user;
+  }
+
+  async increaseTotalLoss(id: string, value: number) {
+    const user = await this.findOneById(id);
+    user.totalLoss += value;
+    this.saveUser(user);
+    return user;
+  }
+
+  async increaseLastTotalLoss(id: string, value: number) {
+    const user = await this.findOneById(id);
+    user.lastTotalLoss += value;
+    this.saveUser(user);
     return user;
   }
 

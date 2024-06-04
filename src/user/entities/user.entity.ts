@@ -81,6 +81,14 @@ export class User {
   @Column({ default: 0 })
   earned: number;
 
+  @ApiProperty({ example: 50 })
+  @Column({ default: 0 })
+  totalLoss: number;
+
+  @ApiProperty({ example: 50 })
+  @Column({ default: 0 })
+  lastTotalLoss: number;
+
   @ApiProperty({ example: "+79991234567", nullable: true })
   @Column({ nullable: true })
   phone: string;

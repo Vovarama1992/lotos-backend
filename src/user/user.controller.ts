@@ -41,7 +41,7 @@ export class UserController {
 
   @Get("notifications")
   getUserNotifications(@Req() req: any, @Query() query: any) {
-    const {all} = query;
+    const { all } = query;
     return this.userService.getNotifications(req.user.id, all);
   }
 
@@ -97,11 +97,14 @@ export class UserController {
         };
       }
       const newBalance = balance - +data.bet + +data.win;
+      const lossValue = +data.bet - +data.win;
       this.gameHistory.changeIsStart(data.sessionId);
       this.userService.changeBalance(data.login, newBalance);
+      this.userService.increaseTotalLoss(data.login, lossValue);
       return {
         status: "success",
         error: "",
+        loss: lossValue,
         login: data.login,
         balance: newBalance,
         currency: "RUB",
