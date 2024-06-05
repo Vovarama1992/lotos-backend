@@ -17,6 +17,7 @@ export class WithdrawHistoryService {
       ...data,
       card: payment_details?.card,
       sbp: payment_details?.sbp,
+      crypto_address: payment_details?.crypto_address,
     });
     return await this.withdrawRepository.save(withdraw);
   }

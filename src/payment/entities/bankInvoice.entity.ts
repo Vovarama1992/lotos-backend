@@ -6,6 +6,9 @@ export class PaymentDetailsDto {
 
   @ApiProperty({ required: false })
   sbp?: string;
+  
+  @ApiProperty({ required: false })
+  crypto_address?: string;
 }
 
 export class BankInvoice {

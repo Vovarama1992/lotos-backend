@@ -11,6 +11,7 @@ export enum WithdrawStatus {
 export enum WithdrawMethod {
   CARD = "card",
   SBP = "sbp",
+  CRYPRO = "crypto",
 }
 
 @Entity("withdrawHistory")
@@ -20,7 +21,7 @@ export class Withdraw {
   id: string;
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, (user) => user.transactions, {onDelete: "CASCADE"})
+  @ManyToOne(() => User, (user) => user.transactions, { onDelete: "CASCADE" })
   user: User;
 
   @ApiProperty({ type: Date })
@@ -32,6 +33,10 @@ export class Withdraw {
   amount: number;
 
   @ApiProperty()
+  @Column({default: "rub"})
+  currency: string;
+
+  @ApiProperty()
   @Column({ nullable: true, enum: WithdrawMethod })
   method: WithdrawMethod;
 
@@ -40,6 +45,9 @@ export class Withdraw {
 
   @Column({ nullable: true })
   sbp: string;
+
+  @Column({ nullable: true })
+  crypto_address: string;
 
   @ApiProperty({ enum: WithdrawStatus })
   @Column({
