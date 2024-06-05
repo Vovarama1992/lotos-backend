@@ -122,11 +122,12 @@ export class User {
   @ApiProperty({ type: () => Transaction, isArray: true })
   @OneToMany(() => Transaction, (transaction) => transaction.user, {
     cascade: true,
+    onDelete: "CASCADE"
   })
   transactions: Transaction[];
 
   @ApiProperty({ type: () => Withdraw, isArray: true })
-  @OneToMany(() => Withdraw, (withdraw) => withdraw.user, { cascade: true })
+  @OneToMany(() => Withdraw, (withdraw) => withdraw.user, { cascade: true, onDelete: "CASCADE" })
   withdrawHistory: Withdraw[];
 
   @ApiProperty({ type: () => Notification, isArray: true })

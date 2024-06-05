@@ -29,6 +29,8 @@ import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
 import { WithdrawMoneyDto } from "./dto/withdraw-money.dto";
 import { User } from "./entities/user.entity";
 import { UserService } from "./user.service";
+import { Cron } from "@nestjs/schedule";
+import { GetUserReferralsResponse } from "src/user-referral/entities/user-referral.entity";
 
 @ApiTags("user")
 @Controller("user")
@@ -38,6 +40,33 @@ export class UserController {
     private readonly gameHistory: GameHistoryService,
     private readonly transactionService: TransactionService
   ) {}
+
+  // run every monday at 10am - расчитать и зачислить кэшбэк каждому юзеру
+  @Cron("0 10 * * MON")
+  depositCashBack() {
+    this.userService.depositCashback();
+  }
+
+  @Get('referrals')
+  @ApiOperation({
+    summary: "Пользователь - получить всех рефералов пользователя с их уровнем",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiOkResponse({
+    description: "Массив рефералов",
+    type: GetUserReferralsResponse,
+  })
+  getReferrals(@Req() req: any){
+    return this.userService.getReferrals(req.user.id)
+  }
+
+  // @Post("test")
+  // test(@Body() data: any){
+  //   return this.userService.depositCashback();
+  // }
 
   @Get("notifications")
   getUserNotifications(@Req() req: any, @Query() query: any) {

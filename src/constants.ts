@@ -20,5 +20,6 @@ export enum SocketEvent {
   WITHDRAW_CANCELLED = "withdraw.cancelled",
   WITHDRAW_SUCCESS = "withdraw.success",
   WITHDRAW_PENDING = "withdraw.pending",
+  PAYMENT_CASHBACK_WAITING_CONFIRMATION = "payment.cashback.waiting-confirmation",
   ADMIN_MESSAGE = "admin-message",
 }

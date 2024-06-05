@@ -38,6 +38,9 @@ import { ManagerModule } from './manager/manager.module';
 import { ReferralInviteModule } from './referral-invite/referral-invite.module';
 import { ReferralInvite } from "./referral-invite/entities/referral-invite.entity";
 import { GamePlacement } from "./games/entities/game-placement.entity";
+import { UserReferralService } from './user-referral/user-referral.service';
+import { UserReferral } from "./user-referral/entities/user-referral.entity";
+import { UserReferralModule } from "./user-referral/user-referral.module";
 
 @Module({
   imports: [
@@ -54,7 +57,7 @@ import { GamePlacement } from "./games/entities/game-placement.entity";
         password: configService.getOrThrow("POSTGRES_PASSWORD"),
         username: configService.getOrThrow("POSTGRES_USER"),
         autoLoadEntities: true,
-        entities: [User, Freespin, Card, GameHistory, Transaction, Notification, ReferralInvite, GamePlacement],
+        entities: [User, Freespin, Card, GameHistory, Transaction, Notification, ReferralInvite, GamePlacement, UserReferral],
         database: configService.getOrThrow("POSTGRES_DB"),
         synchronize: configService.getOrThrow("TYPEORM_AUTOMIGRATE"),
         logging: configService.getOrThrow("TYPEORM_LOGGING"),
@@ -75,6 +78,7 @@ import { GamePlacement } from "./games/entities/game-placement.entity";
     NotificationModule,
     ManagerModule,
     ReferralInviteModule,
+    UserReferralModule
     //MailModule
   ],
   controllers: [],

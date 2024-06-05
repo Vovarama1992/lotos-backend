@@ -20,7 +20,7 @@ export class Withdraw {
   id: string;
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, (user) => user.transactions)
+  @ManyToOne(() => User, (user) => user.transactions, {onDelete: "CASCADE"})
   user: User;
 
   @ApiProperty({ type: Date })

@@ -13,6 +13,7 @@ export enum TransactionType {
   CARD = "card",
   SBP = "sbp",
   CRYPTO = "crypto",
+  CASHBACK = "cashback",
 }
 
 @Entity("transaction")
@@ -26,7 +27,7 @@ export class Transaction {
   invoice_id: string;
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, (user) => user.transactions)
+  @ManyToOne(() => User, (user) => user.transactions, { onDelete: "CASCADE" })
   user: User;
 
   @ApiProperty({ type: Date })

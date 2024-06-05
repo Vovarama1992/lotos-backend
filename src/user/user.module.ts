@@ -12,6 +12,7 @@ import { Transaction } from "src/transaction/entities/transaction.entity";
 import { WithdrawHistoryModule } from "src/withdraw-history/withdraw-history.module";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { NotificationModule } from "src/notification/notification.module";
+import { UserReferralModule } from "src/user-referral/user-referral.module";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { NotificationModule } from "src/notification/notification.module";
     forwardRef(() => TransactionModule),
     forwardRef(() => WithdrawHistoryModule),
     forwardRef(() => NotificationModule),
+    forwardRef(() => UserReferralModule),
   ],
   controllers: [UserController],
   providers: [UserService],

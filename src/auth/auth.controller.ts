@@ -23,6 +23,7 @@ import { RedisService } from "src/redis/redis.service";
 import { v4 as uuidv4 } from "uuid";
 import { ReferralInviteService } from "src/referral-invite/referral-invite.service";
 import { error } from "console";
+import { UserReferralService } from "src/user-referral/user-referral.service";
 
 @UseInterceptors(CookieInterceptor)
 @Controller("/auth")
@@ -32,7 +33,8 @@ export class AuthController {
     private readonly userService: UserService,
     // private readonly mailService: MailService,
     private readonly redisService: RedisService,
-    private readonly referralInviteService: ReferralInviteService
+    private readonly referralInviteService: ReferralInviteService,
+    private readonly userReferralService: UserReferralService
   ) {}
 
   @Post("check")
@@ -56,14 +58,15 @@ export class AuthController {
 
     let manager = null;
 
+    // connect new user to manager by referral_invitation_id
     if (loginUserDto.referral_invitation_id) {
       const referralInvitation = await this.referralInviteService.findOne(
         loginUserDto.referral_invitation_id
       );
-
-      await this.referralInviteService.acceptReferralInvitation(loginUserDto.referral_invitation_id);
+      await this.referralInviteService.acceptReferralInvitation(
+        loginUserDto.referral_invitation_id
+      );
       manager = referralInvitation.manager;
-
     }
 
     if (email) {
@@ -74,17 +77,24 @@ export class AuthController {
       } else {
         const saltRounds = 12;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        console.log(hashedPassword);
+        //save new user
         existingUser = await this.userService.saveUser({
           manager,
           email,
           password: hashedPassword,
         });
         //this.mailService.mailConfirm(email)
+
+        //add referral records to user-referral table
+        if (loginUserDto.user_referral_id) {
+          await this.userReferralService.addReferral(
+            loginUserDto.user_referral_id,
+            existingUser.id
+          );
+        }
       }
       const { id, role } = existingUser;
       const tokens = this.authService.assignTokens(id, role);
-      console.log("return answe4r", tokens);
       return {
         status: "success",
         isNew: isNew,
@@ -92,7 +102,6 @@ export class AuthController {
       };
     }
     if (phone) {
-      console.log("is phoner");
       const code = Math.floor(100000 + Math.random() * 900000);
       this.authService.sendCode(phone, code);
       this.redisService.setCode(phone, code);
@@ -103,7 +112,6 @@ export class AuthController {
           phone: phone,
         });
       }
-      console.log("return answe4r #2");
       return {
         status: "success",
         isNew: isNew,

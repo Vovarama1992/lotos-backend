@@ -16,7 +16,7 @@ export class ReferralInvite {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @ManyToOne(() => User, (user) => user.referrals)
+  @ManyToOne(() => User, (user) => user.referrals, {onDelete: "CASCADE"})
   manager: User;
 
   @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" }) // Recommended

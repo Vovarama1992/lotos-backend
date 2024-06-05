@@ -40,7 +40,7 @@ export class Notification {
   status: NotificationStatus;
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, (user) => user.notifications)
+  @ManyToOne(() => User, (user) => user.notifications, {onDelete: "CASCADE"})
   user: User;
 
   @ApiProperty({ type: Date })

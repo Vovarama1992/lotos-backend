@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { UserResponse } from "./type/userResponse";
 
 import { InjectRepository } from "@nestjs/typeorm";
-import { UserRole } from "src/constants";
+import { SocketEvent, UserRole } from "src/constants";
 import { SocketService } from "src/gateway/gateway.service";
 import {
   NotificationStatus,
@@ -12,6 +12,7 @@ import { NotificationService } from "src/notification/notification.service";
 import {
   Transaction,
   TransactionStatus,
+  TransactionType,
 } from "src/transaction/entities/transaction.entity";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
@@ -23,6 +24,8 @@ import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
 import { WithdrawMoneyDto } from "./dto/withdraw-money.dto";
 import { User } from "./entities/user.entity";
 import * as moment from "moment";
+import { UserReferralService } from "src/user-referral/user-referral.service";
+import { v4 as uuid } from "uuid";
 
 @Injectable()
 export class UserService {
@@ -33,8 +36,69 @@ export class UserService {
     private readonly transactionsRepository: Repository<Transaction>,
     private readonly socketService: SocketService,
     private readonly withdrawService: WithdrawHistoryService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly userReferralService: UserReferralService
   ) {}
+
+  async getReferrals(userId: string) {
+    return await this.userReferralService.getReferrals(userId);
+  }
+
+  async depositCashback() {
+    const allUsers = await this.usersRepository.find({
+      where: { role: UserRole.USER },
+    });
+
+    const adminIds = await this.getAdminIds();
+
+    for (const user of allUsers) {
+      await this.depositCashbackForUser(user.id, adminIds);
+    }
+
+    allUsers.forEach((user) => {
+      user.lastTotalLoss = user.totalLoss;
+    });
+
+    await this.usersRepository.save(allUsers);
+  }
+
+  async depositCashbackForUser(userId: string, adminIds: string[]) {
+    const cashback =
+      await this.userReferralService.calculateUserReferralCashback(userId);
+
+    if (!cashback) {
+      console.log(`No cashback for user ${userId}`);
+      return;
+    }
+
+    console.log(`Cashback (for userId: ${userId} )= ${cashback}`);
+    const user = await this.findOneById(userId);
+
+    //create new transaction
+    const transaction = new Transaction({
+      amount: cashback,
+      method: "cashback",
+      type: TransactionType.CASHBACK,
+      status: TransactionStatus.WAITING_CONFIRMATION,
+      user: user as User,
+      invoice_id: uuid(),
+    });
+
+    await this.transactionsRepository.save(transaction);
+
+    this.notificationService.createNotifications(
+      adminIds,
+      SocketEvent.PAYMENT_CASHBACK_WAITING_CONFIRMATION,
+      {
+        message: `Пользователь ${user.email} ожидает подтверждения начисления кэшбэка по реферальной программе в размере ${cashback} РУБ`,
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+        data: {
+          transaction_id: transaction.id,
+        },
+      }
+    );
+  }
 
   async markNotificationAsViewed(notificationId: string) {
     return this.notificationService.markViewedNotification(notificationId);
@@ -198,6 +262,25 @@ export class UserService {
     this.socketService.emitToUser(id, "balanceUpdated", {
       balance: user.balance,
     });
+    return user;
+  }
+
+  async getLosses(id: string) {
+    const user = await this.findOneById(id);
+    return { totalLoss: user.totalLoss, lastTotalLoss: user.lastTotalLoss };
+  }
+
+  async setTotalLoss(id: string, value: number) {
+    const user = await this.findOneById(id);
+    user.totalLoss = value;
+    this.saveUser(user);
+    return user;
+  }
+
+  async setLastTotalLoss(id: string, value: number) {
+    const user = await this.findOneById(id);
+    user.lastTotalLoss = value;
+    this.saveUser(user);
     return user;
   }
 
