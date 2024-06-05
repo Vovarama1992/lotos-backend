@@ -175,8 +175,9 @@ export class UserService {
   }
 
   async findOneByCredentials(email: string, phone: string): Promise<User> {
+    const userEmail = email.toLowerCase();
     return await this.usersRepository.findOne({
-      where: [{ email }, { phone }],
+      where: [{ email: userEmail }, { phone }],
       select: ["password", "id", "role"],
     });
   }

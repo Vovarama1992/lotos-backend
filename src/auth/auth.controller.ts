@@ -80,7 +80,7 @@ export class AuthController {
         //save new user
         existingUser = await this.userService.saveUser({
           manager,
-          email,
+          email: email.toLowerCase(),
           password: hashedPassword,
         });
         //this.mailService.mailConfirm(email)
