@@ -8,6 +8,8 @@ import {
   BadRequestException,
   Res,
   HttpStatus,
+  Query,
+  Get,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginResponse } from "./type/loginResponse";
@@ -24,6 +26,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ReferralInviteService } from "src/referral-invite/referral-invite.service";
 import { error } from "console";
 import { UserReferralService } from "src/user-referral/user-referral.service";
+import { GetTelegramAuthQueryDto } from "./dto/get-telegram-auth-query.dto";
 
 @UseInterceptors(CookieInterceptor)
 @Controller("/auth")
@@ -36,6 +39,11 @@ export class AuthController {
     private readonly referralInviteService: ReferralInviteService,
     private readonly userReferralService: UserReferralService
   ) {}
+
+  @Get("telegram")
+  receiveTelegramAuthData(@Query() data: GetTelegramAuthQueryDto) {
+    return this.authService.signInAsTelegramUser(data);
+  }
 
   @Post("check")
   async checkRegister(@Body() loginUserDto: CheckUserRegister) {
@@ -56,8 +64,11 @@ export class AuthController {
     );
     const isNew = existingUser ? false : true;
 
-    if(email && !password) throw new BadRequestException("For email authentication you must provide a password.");
-    
+    if (email && !password)
+      throw new BadRequestException(
+        "For email authentication you must provide a password."
+      );
+
     let manager = null;
 
     // connect new user to manager by referral_invitation_id

@@ -101,11 +101,12 @@ export class User {
   @Column({ default: false })
   isBan: boolean;
 
-  @ApiProperty({ example: 1532412312, nullable: true })
+  @ApiProperty({ example: "username", nullable: true })
   @Column({
     nullable: true,
+    unique: true
   })
-  telegram_id: number;
+  telegram_username: string;
 
   @ApiProperty({ nullable: true })
   @Column({ nullable: true, select: false })

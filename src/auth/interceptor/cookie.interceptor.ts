@@ -10,6 +10,9 @@ import {
   @Injectable()
   export class CookieInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+      const url = context.switchToHttp().getRequest().url as string
+      if(url.includes('auth/telegram')) return next.handle()
+        
       return next.handle().pipe(
         map(data => {
           const res = context.switchToHttp().getResponse();

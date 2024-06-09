@@ -208,6 +208,12 @@ export class UserService {
     });
   }
 
+  async findOneByTelegramUsername(username: string): Promise<UserResponse> {
+    return await this.usersRepository.findOne({
+      where: { telegram_username: username },
+    });
+  }
+
   async findOneByCredentials(email: string, phone: string): Promise<User> {
     const userEmail = (email || "").toLowerCase();
     return await this.usersRepository.findOne({
