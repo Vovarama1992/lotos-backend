@@ -55,8 +55,8 @@ export class AuthService {
                     "text": "Ваш код: " + code
                 }
             ],
-            "login": "esZekad0504",
-            "password": "617404"
+            "login": process.env.IQSMS_LOGIN,
+            "password": process.env.IQSMS_PASSWORD
         }
         const response = await axios.post(url, body);
     }

@@ -56,6 +56,8 @@ export class AuthController {
     );
     const isNew = existingUser ? false : true;
 
+    if(email && !password) throw new BadRequestException("For email authentication you must provide a password.");
+    
     let manager = null;
 
     // connect new user to manager by referral_invitation_id

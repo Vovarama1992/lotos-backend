@@ -21,9 +21,10 @@ export class RegisterUserDto {
   phone?: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  password: string;
+  password?: string;
 
   @ApiProperty()
   @IsOptional()

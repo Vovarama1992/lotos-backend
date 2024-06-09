@@ -28,7 +28,7 @@ async function bootstrap() {
         "http://adarfawerf.ru",
         "https://adarfawerf.ru",
       ],
-      methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
+      methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
       allowedHeaders: ["Content-Type", "Authorization"],
       exposedHeaders: ["Authorization"],
       credentials: true,
