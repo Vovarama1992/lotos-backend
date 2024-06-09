@@ -14,7 +14,10 @@ import {
   TransactionStatus,
   TransactionType,
 } from "src/transaction/entities/transaction.entity";
-import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
+import {
+  Withdraw,
+  WithdrawMethod,
+} from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
 import { Repository } from "typeorm";
 import { SendMoneyDTO } from "./decorators/sendMoney.dto";
@@ -39,6 +42,37 @@ export class UserService {
     private readonly notificationService: NotificationService,
     private readonly userReferralService: UserReferralService
   ) {}
+
+  async getFullBalance(userId: string) {
+    let currentBalance = 0,
+      totalIncoming = 0,
+      totalWithdrawal = 0;
+    const user = await this.usersRepository.findOneOrFail({
+      where: { id: userId },
+      relations: { transactions: true, withdrawHistory: true },
+    });
+
+    currentBalance = user.balance;
+
+    user.transactions.forEach((transaction) => {
+      totalIncoming += transaction.amount;
+    });
+
+    user.withdrawHistory.forEach((withdrawal) => {
+      if (
+        withdrawal.method === WithdrawMethod.CARD ||
+        withdrawal.method === WithdrawMethod.SBP
+      ) {
+        totalWithdrawal += withdrawal.amount;
+      }
+    });
+
+    return {
+      balance: currentBalance,
+      totalIncoming,
+      totalWithdrawal,
+    };
+  }
 
   async getReferrals(userId: string) {
     return await this.userReferralService.getReferrals(userId);

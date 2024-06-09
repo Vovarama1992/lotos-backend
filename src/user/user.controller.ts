@@ -31,6 +31,7 @@ import { User } from "./entities/user.entity";
 import { UserService } from "./user.service";
 import { Cron } from "@nestjs/schedule";
 import { GetUserReferralsResponse } from "src/user-referral/entities/user-referral.entity";
+import { GetUserBalanceDto } from "./dto/get-user-balance.dto";
 
 @ApiTags("user")
 @Controller("user")
@@ -46,6 +47,22 @@ export class UserController {
   depositCashBack() {
     console.log("Running cron job - deposit cashback to users (Monday 10 am)")
     this.userService.depositCashback();
+  }
+
+  @Get('balance')
+  @ApiOperation({
+    summary: "Пользователь - получить текущий баланс, сумму всех поплнений и выводов в рублях",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiOkResponse({
+    description: "Баланс",
+    type: GetUserBalanceDto,
+  })
+  getBalance(@Req() req: any): Promise<GetUserBalanceDto>{
+    return this.userService.getFullBalance(req.user.id)
   }
 
   @Get('referrals')
