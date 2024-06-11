@@ -32,6 +32,8 @@ import { UserService } from "./user.service";
 import { Cron } from "@nestjs/schedule";
 import { GetUserReferralsResponse } from "src/user-referral/entities/user-referral.entity";
 import { GetUserBalanceDto } from "./dto/get-user-balance.dto";
+import { GetDepositsQueryDto } from "./dto/get-deposits-query.dto";
+import { Between } from "typeorm";
 
 @ApiTags("user")
 @Controller("user")
@@ -45,13 +47,14 @@ export class UserController {
   // run every monday at 10am - расчитать и зачислить кэшбэк каждому юзеру
   @Cron("0 10 * * MON")
   depositCashBack() {
-    console.log("Running cron job - deposit cashback to users (Monday 10 am)")
+    console.log("Running cron job - deposit cashback to users (Monday 10 am)");
     this.userService.depositCashback();
   }
 
-  @Get('balance')
+  @Get("balance")
   @ApiOperation({
-    summary: "Пользователь - получить текущий баланс, сумму всех поплнений и выводов в рублях",
+    summary:
+      "Пользователь - получить текущий баланс, сумму всех поплнений и выводов в рублях",
   })
   @ApiResponse({
     status: 403,
@@ -61,11 +64,11 @@ export class UserController {
     description: "Баланс",
     type: GetUserBalanceDto,
   })
-  getBalance(@Req() req: any): Promise<GetUserBalanceDto>{
-    return this.userService.getFullBalance(req.user.id)
+  getBalance(@Req() req: any): Promise<GetUserBalanceDto> {
+    return this.userService.getFullBalance(req.user.id);
   }
 
-  @Get('referrals')
+  @Get("referrals")
   @ApiOperation({
     summary: "Пользователь - получить всех рефералов пользователя с их уровнем",
   })
@@ -77,8 +80,8 @@ export class UserController {
     description: "Массив рефералов",
     type: GetUserReferralsResponse,
   })
-  getReferrals(@Req() req: any){
-    return this.userService.getReferrals(req.user.id)
+  getReferrals(@Req() req: any) {
+    return this.userService.getReferrals(req.user.id);
   }
 
   // @Post("test")
@@ -180,11 +183,20 @@ export class UserController {
     description: "Транзакции на пополнение",
     type: GetTransactionResponse,
   })
-  getDeposits(@Req() req, @Query() query: any) {
+  getDeposits(@Req() req, @Query() query: GetDepositsQueryDto) {
     const userId = req.user.id;
+    const applyDateFilter = query.start_date && query.end_date;
+
+    const dateFilter = applyDateFilter
+      ? { timestamp: Between(query.start_date, query.end_date) }
+      : {};
+
+    const statusFilter = query.status ? { status: query.status } : {};
+
     return this.transactionService.getAllTransactions(
       {
-        ...query,
+        ...dateFilter,
+        ...statusFilter,
         user: { id: userId },
       },
       { includeUser: false }

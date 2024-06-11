@@ -19,7 +19,7 @@ import {
   WithdrawMethod,
 } from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
-import { Repository } from "typeorm";
+import { Between, Repository } from "typeorm";
 import { SendMoneyDTO } from "./decorators/sendMoney.dto";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
 import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
@@ -422,9 +422,18 @@ export class UserService {
   }
 
   async getAllWithdraws(userId: string, filter: GetWithdrawsQueryDto) {
+    const applyDateFilter = filter.start_date && filter.end_date;
+
+    const dateFilter = applyDateFilter
+      ? { timestamp: Between(filter.start_date, filter.end_date) }
+      : {};
+
+    const statusFilter = filter.status ? { status: filter.status } : {};
+
     return await this.withdrawService.getAllWithdrawTransactions(
       {
-        ...filter,
+        ...dateFilter,
+        ...statusFilter,
         user: { id: userId },
       },
       { includeUser: false }
