@@ -4,7 +4,7 @@ import { UserService } from "../user/user.service";
 import { AccessTokenPayload, RefreshTokenPayload } from "./type/jwtPayload";
 import { UserRole } from "src/constants";
 import axios from "axios";
-import { GetTelegramAuthQueryDto } from "./dto/get-telegram-auth-query.dto";
+import { GetTelegramAuthDto } from "./dto/get-telegram-auth.dto";
 const { createHash, createHmac } = require("crypto");
 
 @Injectable()
@@ -30,14 +30,25 @@ export class AuthService {
     return hmac === hash;
   }
 
-  async signInAsTelegramUser(data: GetTelegramAuthQueryDto) {
+  private checkAuthExpired(authDate: number, expirationTimeInSeconds: number) {
+    const now = new Date().getTime();
+    const timeElapsedInSeconds = (now - authDate * 1000) / 1000;
+    return timeElapsedInSeconds < expirationTimeInSeconds;
+  }
+
+  async signInAsTelegramUser(data: GetTelegramAuthDto) {
     let existingUser = await this.userService.findOneByTelegramUsername(
       data.username
     );
 
     const isNew = !existingUser;
 
-    if (!this.checkSignature(data)) throw new ForbiddenException("Forbidden. Hash mismatch!");
+    if (!this.checkSignature(data))
+      throw new ForbiddenException("Forbidden. Hash mismatch!");
+
+    if (!this.checkAuthExpired(data.auth_date, 60)) {
+      throw new ForbiddenException("Forbidden. Auth expired!");
+    }
 
     if (existingUser) {
     } else {

@@ -26,7 +26,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ReferralInviteService } from "src/referral-invite/referral-invite.service";
 import { error } from "console";
 import { UserReferralService } from "src/user-referral/user-referral.service";
-import { GetTelegramAuthQueryDto } from "./dto/get-telegram-auth-query.dto";
+import { GetTelegramAuthDto } from "./dto/get-telegram-auth.dto";
 
 @UseInterceptors(CookieInterceptor)
 @Controller("/auth")
@@ -40,8 +40,8 @@ export class AuthController {
     private readonly userReferralService: UserReferralService
   ) {}
 
-  @Get("telegram")
-  receiveTelegramAuthData(@Query() data: GetTelegramAuthQueryDto) {
+  @Post("telegram")
+  receiveTelegramAuthData(@Body() data: GetTelegramAuthDto) {
     return this.authService.signInAsTelegramUser(data);
   }
 
