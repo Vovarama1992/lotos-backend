@@ -36,16 +36,17 @@ async function bootstrap() {
     ...httpsOptions,
   });
 
+  app.setGlobalPrefix("api");
+
   const config = new DocumentBuilder()
     .setTitle("Casino backend")
     .setDescription("Описание API")
     .setVersion("1.2")
     .addTag("admin", "Админ")
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("docs", app, document);
-
-  app.setGlobalPrefix("api");
 
   // global validation
   app.useGlobalPipes(

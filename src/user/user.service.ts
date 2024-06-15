@@ -29,6 +29,7 @@ import { User } from "./entities/user.entity";
 import * as moment from "moment";
 import { UserReferralService } from "src/user-referral/user-referral.service";
 import { v4 as uuid } from "uuid";
+import { GetUserReferralType } from "./dto/get-user-referrals-quesry.dto";
 
 @Injectable()
 export class UserService {
@@ -74,8 +75,8 @@ export class UserService {
     };
   }
 
-  async getReferrals(userId: string) {
-    return await this.userReferralService.getReferrals(userId);
+  async getReferrals(userId: string, type: GetUserReferralType) {
+    return await this.userReferralService.getReferralsWithStats(userId, type);
   }
 
   async depositCashback() {
@@ -91,6 +92,7 @@ export class UserService {
 
     allUsers.forEach((user) => {
       user.lastTotalLoss = user.totalLoss;
+      user.lastTotalEarned = user.totalEarned;
     });
 
     await this.usersRepository.save(allUsers);
@@ -328,6 +330,13 @@ export class UserService {
   async increaseTotalLoss(id: string, value: number) {
     const user = await this.findOneById(id);
     user.totalLoss += value;
+    this.saveUser(user);
+    return user;
+  }
+
+  async increaseTotalEarned(id: string, value: number) {
+    const user = await this.findOneById(id);
+    user.totalEarned += value;
     this.saveUser(user);
     return user;
   }

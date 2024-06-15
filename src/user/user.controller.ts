@@ -13,6 +13,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import {
+  ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiResponse,
@@ -34,8 +35,14 @@ import { GetUserReferralsResponse } from "src/user-referral/entities/user-referr
 import { GetUserBalanceDto } from "./dto/get-user-balance.dto";
 import { GetDepositsQueryDto } from "./dto/get-deposits-query.dto";
 import { Between } from "typeorm";
+import {
+  GetUserReferralType,
+  GetUserReferralsQueryDto,
+} from "./dto/get-user-referrals-quesry.dto";
+import { GetUserReferralsDto } from "./dto/get-user-referrals.dto";
 
 @ApiTags("user")
+@ApiBearerAuth("JWT")
 @Controller("user")
 export class UserController {
   constructor(
@@ -77,11 +84,12 @@ export class UserController {
     description: "Пользователь не авторизован",
   })
   @ApiOkResponse({
-    description: "Массив рефералов",
-    type: GetUserReferralsResponse,
+    description: "Массив рефералов и статистика",
+    type: GetUserReferralsDto,
   })
-  getReferrals(@Req() req: any) {
-    return this.userService.getReferrals(req.user.id);
+  getReferrals(@Req() req: any, @Query() query: GetUserReferralsQueryDto) {
+    const { type = GetUserReferralType.ALL } = query;
+    return this.userService.getReferrals(req.user.id, type);
   }
 
   // @Post("test")
@@ -146,15 +154,21 @@ export class UserController {
           error: "ERROR CODE",
         };
       }
-      const newBalance = balance - +data.bet + +data.win;
-      const lossValue = +data.bet - +data.win;
+      const profit = +data.win - +data.bet;
+      const newBalance = balance + profit;
       this.gameHistory.changeIsStart(data.sessionId);
       this.userService.changeBalance(data.login, newBalance);
-      this.userService.increaseTotalLoss(data.login, lossValue);
+
+      if (profit < 0) {
+        this.userService.increaseTotalLoss(data.login, Math.abs(profit));
+      } else {
+        this.userService.increaseTotalEarned(data.login, Math.abs(profit));
+      }
+
       return {
         status: "success",
         error: "",
-        loss: lossValue,
+        loss: profit < 0 ? Math.abs(profit) : 0,
         login: data.login,
         balance: newBalance,
         currency: "RUB",

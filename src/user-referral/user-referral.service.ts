@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { UserReferral } from "./entities/user-referral.entity";
-import { Repository } from "typeorm";
-import { UserService } from "src/user/user.service";
+import { GetUserReferralType } from "src/user/dto/get-user-referrals-quesry.dto";
 import { User } from "src/user/entities/user.entity";
+import { Repository } from "typeorm";
+import { UserReferral } from "./entities/user-referral.entity";
 
 @Injectable()
 export class UserReferralService {
@@ -13,6 +13,26 @@ export class UserReferralService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>
   ) {}
+
+  private getUserLoss(user: User, type: GetUserReferralType) {
+    let result = user.totalLoss;
+
+    if (type === GetUserReferralType.WEEK) {
+      result = user.totalLoss - user.lastTotalLoss;
+    }
+
+    return result;
+  }
+
+  private getUserEarned(user: User, type: GetUserReferralType) {
+    let result = user.totalEarned;
+
+    if (type === GetUserReferralType.WEEK) {
+      result = user.totalEarned - user.lastTotalEarned;
+    }
+
+    return result;
+  }
 
   async addReferral(userId: string, referralId: string) {
     const referralUser = (await this.userRepository.findOneByOrFail({
@@ -96,7 +116,55 @@ export class UserReferralService {
     return totalCashback;
   }
 
-  async getReferrals(userId: string) {
+  private sortUsersByLoss(
+    users: User[],
+    type: GetUserReferralType,
+    order?: "asc" | "desc"
+  ) {
+    const orderFlag = order === "asc" ? 1 : -1;
+
+    users.sort((user1, user2) => {
+      if (this.getUserLoss(user1, type) > this.getUserLoss(user2, type))
+        return orderFlag;
+      return -orderFlag;
+    });
+  }
+
+  async getReferralsWithStats(userId: string, type: GetUserReferralType) {
+    let users = [] as User[];
+
+    for (let i = 0; i < 3; i++) {
+      const level = await this.userReferralRepository.find({
+        where: { user: { id: userId }, level: i + 1 },
+        relations: {
+          user: true,
+        },
+      });
+      const userInLevel = level.map((el) => ({ ...el.user, level: el.level }));
+      //sort users
+      this.sortUsersByLoss(userInLevel, type, "desc");
+      // limit users to top 5
+      userInLevel.splice(5);
+
+      users = [...users, ...userInLevel];
+    }
+
+    const stats = {
+      userQuantity: users.length,
+      lostAmount: users.reduce(
+        (result, user) => (result += this.getUserLoss(user, type)),
+        0
+      ),
+      wonAmount: users.reduce(
+        (result, user) => (result += this.getUserEarned(user, type)),
+        0
+      ),
+    };
+
+    return { stats, users };
+  }
+
+  async getReferrals(userId: string, type: GetUserReferralType) {
     return await this.userReferralRepository.find({
       where: { user: { id: userId } },
       relations: {

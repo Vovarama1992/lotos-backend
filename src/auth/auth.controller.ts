@@ -27,6 +27,7 @@ import { ReferralInviteService } from "src/referral-invite/referral-invite.servi
 import { error } from "console";
 import { UserReferralService } from "src/user-referral/user-referral.service";
 import { GetTelegramAuthDto } from "./dto/get-telegram-auth.dto";
+import { ApiOperation } from "@nestjs/swagger";
 
 @UseInterceptors(CookieInterceptor)
 @Controller("/auth")
@@ -41,6 +42,9 @@ export class AuthController {
   ) {}
 
   @Post("telegram")
+  @ApiOperation({
+    summary: "Регистрация (вход) с помощью телеграм",
+  })
   receiveTelegramAuthData(@Body() data: GetTelegramAuthDto) {
     return this.authService.signInAsTelegramUser(data);
   }
