@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { GetUserReferralType } from "src/user/dto/get-user-referrals-quesry.dto";
 import { User } from "src/user/entities/user.entity";
@@ -80,13 +80,20 @@ export class UserReferralService {
   }
 
   async calculateUserReferralCashback(userId: string) {
-    let totalCashback = 0;
+    if(!userId) throw new InternalServerErrorException("calculateUserReferralCashback: userId can't be empty!")
 
+    let totalCashback = 0;
+    // уровни кэшбэков - 10%, 5%, 3%
     const cashbackRate = [0.1, 0.05, 0.03];
+    const user = await this.userRepository.findOneByOrFail({ id: userId });
+    const userLoss = user.totalLoss - user.lastTotalLoss;
 
     for (let level = 0; level < 3; level++) {
+      const isFirstLevel = level === 0;
       const currentCashbackRate = cashbackRate[level];
       let totalCashbackInLevel = 0;
+
+      // получаем список всех рефералов на текущем уровне
       const usersInLevel = await this.userReferralRepository.find({
         where: { user: { id: userId }, level: level + 1 },
         relations: { referral: true },
@@ -98,6 +105,7 @@ export class UserReferralService {
         },
       });
 
+      // сортируем рефералов от наивысшего проигрыша до наименьшего проигрыша за последнюю неделю
       usersInLevel.sort(
         (a, b) =>
           a.referral.totalLoss -
@@ -105,11 +113,21 @@ export class UserReferralService {
           (b.referral.totalLoss - b.referral.lastTotalLoss)
       );
 
-      usersInLevel.slice(0, 5).forEach((el) => {
+      let endIndex = 5;
+
+      // учитывать проигрыш самого пользователя на верхнем уровне кэшбека
+      if (isFirstLevel) {
+        totalCashbackInLevel += userLoss * currentCashbackRate;
+        endIndex = 4;
+      }
+
+      // суммируем кэшбэк топ 5 пользователей по проигрышу на каждом уровне кэшбэков
+      usersInLevel.slice(0, endIndex).forEach((el) => {
         const referralLoss = el.referral.totalLoss - el.referral.lastTotalLoss;
         totalCashbackInLevel += currentCashbackRate * referralLoss;
       });
 
+      // суммируем общий кэшбэк
       totalCashback += totalCashbackInLevel;
     }
 

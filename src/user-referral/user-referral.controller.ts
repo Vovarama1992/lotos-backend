@@ -2,7 +2,8 @@ import {
     Body,
     Controller,
     Get,
-    Post
+    Post,
+    Req
 } from "@nestjs/common";
 import {
     ApiTags
@@ -19,7 +20,7 @@ export class UserReferralController {
   }
 
   // @Get("get-levels")
-  // getLevels(@Body() data: any){
-  //   return this.userReferralService.test(data.userId);
+  // getLevels(@Req() req: any){
+  //   return this.userReferralService.calculateUserReferralCashback(req.user.id);
   // }
 }
