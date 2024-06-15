@@ -49,11 +49,16 @@ export class ReferralInviteService {
   }
 
   async findAll(managerId: string) {
-    const [data, count] = await this.referralInviteRepository.findAndCount({
+    const [data, _count] = await this.referralInviteRepository.findAndCount({
       where: { manager: { id: managerId } },
       order: { created_at: "DESC" },
     });
-    return { count, data };
+
+    data.forEach((invitation) => {
+      invitation.link = `${process.env.FRONTEND_URL}?referral_invitation_id=${invitation.id}`;
+    });
+
+    return data;
   }
 
   async findOne(referralInviteId: string) {

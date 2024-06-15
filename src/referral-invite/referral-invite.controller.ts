@@ -15,6 +15,8 @@ import { UpdateReferralInviteDto } from "./dto/update-referral-invite.dto";
 import { RolesGuard } from "src/auth/guard/role.guard";
 import { UserRole } from "src/constants";
 import { Roles } from "src/auth/decorator/roles.decorator";
+import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
+import { ReferralInvite } from "./entities/referral-invite.entity";
 
 @UseGuards(RolesGuard)
 @Controller("referral-invite")
@@ -39,6 +41,8 @@ export class ReferralInviteController {
   }
 
   @Get()
+  @ApiOperation({description: "Получение всех реферальных ссылок"})
+  @ApiOkResponse({type: ReferralInvite, isArray: true})
   @Roles([UserRole.MANAGER])
   findAll(@Req() req: any) {
     return this.referralInviteService.findAll(req.user.id);

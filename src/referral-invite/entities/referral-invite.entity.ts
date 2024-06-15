@@ -16,17 +16,23 @@ export class ReferralInvite {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @ManyToOne(() => User, (user) => user.referrals, {onDelete: "CASCADE"})
+  @ManyToOne(() => User, (user) => user.referrals, { onDelete: "CASCADE" })
   manager: User;
 
+  @ApiProperty()
   @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" }) // Recommended
   created_at: Date;
 
+  @ApiProperty()
   @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" }) // Recommended
   expire_date: string;
 
+  @ApiProperty()
   @Column({ type: "boolean", default: false })
   is_used: boolean;
+
+  @ApiProperty()
+  link: string;
 
   public constructor(data: Partial<ReferralInvite>) {
     Object.assign(this, data);
