@@ -3,6 +3,7 @@ import {
   Module,
   NestModule,
   RequestMethod,
+  forwardRef,
 } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
@@ -41,6 +42,8 @@ import { GamePlacement } from "./games/entities/game-placement.entity";
 import { UserReferralService } from './user-referral/user-referral.service';
 import { UserReferral } from "./user-referral/entities/user-referral.entity";
 import { UserReferralModule } from "./user-referral/user-referral.module";
+import { ManagerBotModule } from './manager-bot/manager-bot.module';
+import { AdminService } from "./admin/admin.service";
 
 @Module({
   imports: [
@@ -78,7 +81,8 @@ import { UserReferralModule } from "./user-referral/user-referral.module";
     NotificationModule,
     ManagerModule,
     ReferralInviteModule,
-    UserReferralModule
+    UserReferralModule,
+    ManagerBotModule
     //MailModule
   ],
   controllers: [],

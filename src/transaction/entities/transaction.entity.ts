@@ -7,6 +7,7 @@ export enum TransactionStatus {
   FAILED = "failed",
   PENDING = "pending",
   WAITING_CONFIRMATION = "waiting_confirmation",
+  CANCELLED = "cancelled",
 }
 
 export enum TransactionType {

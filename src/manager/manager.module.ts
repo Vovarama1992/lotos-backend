@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { ManagerService } from "./manager.service";
 import { ManagerController } from "./manager.controller";
 import { TransactionModule } from "src/transaction/transaction.module";
@@ -11,7 +11,7 @@ import { NotificationModule } from "src/notification/notification.module";
   imports: [
     TypeOrmModule.forFeature([User]),
     NotificationModule,
-    TransactionModule,
+    forwardRef(()=>TransactionModule),
     WithdrawHistoryModule,
   ],
   controllers: [ManagerController],

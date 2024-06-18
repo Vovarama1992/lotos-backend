@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { AdminController } from "./admin.controller";
 import { TransactionModule } from "src/transaction/transaction.module";
@@ -13,12 +13,13 @@ import { User } from "src/user/entities/user.entity";
 @Module({
   imports: [
     TypeOrmModule.forFeature([GamePlacement, User]),
-    TransactionModule,
-    WithdrawHistoryModule,
-    UsersModule,
-    NotificationModule,
+    forwardRef(()=>TransactionModule),
+    forwardRef(()=>WithdrawHistoryModule),
+    forwardRef(()=>UsersModule),
+    forwardRef(()=>NotificationModule),
   ],
   controllers: [AdminController],
   providers: [AdminService, RedisService],
+  exports: [AdminService]
 })
 export class AdminModule {}

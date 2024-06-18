@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   ForbiddenException,
@@ -39,6 +40,8 @@ import {
   NotificationType,
 } from "src/notification/entities/notification.entity";
 import { SocketEvent } from "src/constants";
+import { SendIncomingMessage } from "src/manager-bot/entities/incoming-message.entity";
+import { TelegramAdminBotNotificationType } from "src/manager-bot/manager-bot.service";
 
 @ApiTags("payment")
 @UseGuards(RolesGuard)
@@ -294,9 +297,24 @@ export class PaymentController {
         }
       );
 
+      this.notificationService.sendAdminTelegramNotifications(
+        adminUserIds,
+        new SendIncomingMessage({
+          transaction_id: transaction.id,
+          user_email: transaction.user.email,
+          type: transaction.type,
+          amount: transaction.amount,
+          timestamp: transaction.timestamp,
+        })
+      );
+
       return transaction;
     } catch (error) {
       console.log(error);
+      if(error instanceof BadRequestException){
+        throw error;
+      }
+      
       throw new NotFoundException("Transaction was not found!");
     }
   }

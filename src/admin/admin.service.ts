@@ -1,8 +1,10 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcryptjs";
@@ -16,7 +18,10 @@ import {
 } from "src/notification/entities/notification.entity";
 import { NotificationService } from "src/notification/notification.service";
 import { RedisService } from "src/redis/redis.service";
-import { Transaction, TransactionStatus } from "src/transaction/entities/transaction.entity";
+import {
+  Transaction,
+  TransactionStatus,
+} from "src/transaction/entities/transaction.entity";
 import { TransactionService } from "src/transaction/transaction.service";
 import { UserService } from "src/user/user.service";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
@@ -34,11 +39,17 @@ import { BroadcastMessageDto } from "./dto/broadcast-message.dto";
 @Injectable()
 export class AdminService {
   constructor(
+    @Inject(forwardRef(()=>TransactionService))
     private readonly transactionService: TransactionService,
+    @Inject(forwardRef(()=>WithdrawHistoryService))
     private readonly withdrawService: WithdrawHistoryService,
+    @Inject(forwardRef(()=>UserService))
     private readonly userService: UserService,
+    @Inject(forwardRef(()=>RedisService))
     private readonly redisService: RedisService,
+    @Inject(forwardRef(()=>SocketService))
     private readonly socketService: SocketService,
+    @Inject(forwardRef(()=>NotificationService))
     private readonly notificationService: NotificationService,
     @InjectRepository(GamePlacement)
     private readonly gamePlacementRepository: Repository<GamePlacement>,
@@ -246,6 +257,40 @@ export class AdminService {
     return transaction;
   }
 
+  async cancelBankTransaction(transaction_id: string) {
+    let transaction,
+      error = null;
+    try {
+      transaction = await this.userService.getTransaction(transaction_id);
+      const userId = transaction.user.id;
+
+      transaction =
+        await this.transactionService.cancelTransaction(transaction_id);
+
+      await this.notificationService.createNotifications(
+        [userId],
+        SocketEvent.PAYMENT_BANK_SUCCESS,
+        {
+          status: NotificationStatus.INFO,
+          type: NotificationType.SYSTEM,
+          message: `Пополнение баланса отклонено. Сумма ${(transaction as Transaction).amount} RUB`,
+          data: {
+            transaction_id: transaction_id,
+          },
+        }
+      );
+    } catch (err) {
+      console.log(err);
+      error = new NotFoundException("Transaction was not found!");
+    }
+
+    if (error) {
+      throw error;
+    }
+
+    return transaction;
+  }
+
   async cancelWithdrawTransaction(withdrawTransactionId: string) {
     let error = null,
       withdrawTransaction: Withdraw;
@@ -318,7 +363,7 @@ export class AdminService {
           },
         }
       );
-      
+
       return withdrawTransaction;
     }
   }

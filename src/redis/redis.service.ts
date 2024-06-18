@@ -13,6 +13,22 @@ export class RedisService {
     });
   }
 
+  async addElementToSet(setName: string, key: string) {
+    await this.client.sadd(setName, key);
+  }
+
+  async removeElementFromSet(setName: string, key: string) {
+    await this.client.srem(setName, key);
+  }
+
+  async getElementsFromSet(setName: string) {
+    return await this.client.smembers(setName);
+  }
+
+  async isSetMember(setName: string, key: string) {
+    return this.client.sismember(setName, key);
+  }
+
   async set(key: string, value: string) {
     await this.client.set(key, value);
   }

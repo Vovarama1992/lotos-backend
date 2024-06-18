@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from "@nestjs/common";
 import { UserResponse } from "./type/userResponse";
 
 import { InjectRepository } from "@nestjs/typeorm";
@@ -30,6 +35,8 @@ import * as moment from "moment";
 import { UserReferralService } from "src/user-referral/user-referral.service";
 import { v4 as uuid } from "uuid";
 import { GetUserReferralType } from "./dto/get-user-referrals-quesry.dto";
+import { AdminBotService } from "src/manager-bot/manager-bot.service";
+import { SendWithdrawalMessage } from "src/manager-bot/entities/withdrawal-message.entity";
 
 @Injectable()
 export class UserService {
@@ -40,6 +47,7 @@ export class UserService {
     private readonly transactionsRepository: Repository<Transaction>,
     private readonly socketService: SocketService,
     private readonly withdrawService: WithdrawHistoryService,
+    @Inject(forwardRef(() => NotificationService))
     private readonly notificationService: NotificationService,
     private readonly userReferralService: UserReferralService
   ) {}
@@ -379,6 +387,23 @@ export class UserService {
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
       }
+    );
+
+    this.notificationService.sendAdminTelegramNotifications(
+      adminUserIds,
+      new SendWithdrawalMessage({
+        withdrawal_id: withdrawTransaction.id,
+        user_email: withdrawTransaction.user.email,
+        amount: withdrawTransaction.amount,
+        method: withdrawTransaction.method,
+        timestamp: withdrawTransaction.timestamp,
+        payment_details: {
+          card: withdrawTransaction.card,
+          crypto_address: withdrawTransaction.crypto_address,
+          sbp: withdrawTransaction.sbp,
+        },
+        currency: withdrawTransaction.currency,
+      })
     );
 
     return { ...withdrawTransaction, user: updatedUser };

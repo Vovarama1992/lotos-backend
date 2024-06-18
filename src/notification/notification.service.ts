@@ -1,10 +1,16 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, forwardRef } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/user/entities/user.entity";
-import { FindOptionsWhere, Repository } from "typeorm";
+import { FindOptionsWhere, In, Repository } from "typeorm";
 import { CreateNotificationDto } from "./dto/create-notification.dto";
 import { Notification } from "./entities/notification.entity";
 import { SocketService } from "src/gateway/gateway.service";
+import {
+  AdminBotService,
+  TelegramAdminBotNotificationType,
+} from "src/manager-bot/manager-bot.service";
+import { SendWithdrawalMessage } from "src/manager-bot/entities/withdrawal-message.entity";
+import { SendIncomingMessage } from "src/manager-bot/entities/incoming-message.entity";
 
 @Injectable()
 export class NotificationService {
@@ -13,8 +19,55 @@ export class NotificationService {
     private readonly notificationRepository: Repository<Notification>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly socketService: SocketService
+    private readonly socketService: SocketService,
+    @Inject(forwardRef(() => AdminBotService))
+    private readonly adminBotService: AdminBotService
   ) {}
+
+  async sendAdminTelegramNotifications(
+    adminUserIds: string[],
+    data: SendIncomingMessage | SendWithdrawalMessage
+  ) {
+    // find admin user usernames
+    const usernames = (
+      await this.userRepository.find({
+        where: { id: In(adminUserIds) },
+        select: { telegram_username: true },
+      })
+    )?.map((user) => user.telegram_username);
+
+    console.log(adminUserIds, usernames);
+
+    // filter for non empty usernames
+    const filteredUsernames = usernames?.filter((username) => username?.length);
+
+    let dataType = TelegramAdminBotNotificationType.INCOMING;
+    if (data instanceof SendWithdrawalMessage) {
+      dataType = TelegramAdminBotNotificationType.WITHDRAWAL;
+    }
+
+    //send all messages
+    for (let i = 0; i < filteredUsernames.length; i++) {
+      const adminUsername = filteredUsernames[i];
+      await this.sendAdminTelegramNotification(
+        adminUsername,
+        dataType,
+        data
+      ).catch((err) =>
+        console.log(
+          `Error. Error sending Telegram message to one of the admins. ${err}`
+        )
+      );
+    }
+  }
+
+  async sendAdminTelegramNotification(
+    adminUsername: string,
+    type: TelegramAdminBotNotificationType,
+    data: SendIncomingMessage | SendWithdrawalMessage
+  ) {
+    return this.adminBotService.sendMessageToUser(adminUsername, type, data);
+  }
 
   async getNotifications(
     filter?: FindOptionsWhere<Notification> | FindOptionsWhere<Notification>[]

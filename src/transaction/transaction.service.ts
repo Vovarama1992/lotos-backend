@@ -1,4 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from "@nestjs/common";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
 import { UpdateTransactionDto } from "./dto/update-transaction.dto";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -10,6 +15,7 @@ import { User } from "src/user/entities/user.entity";
 @Injectable()
 export class TransactionService {
   constructor(
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>
@@ -28,8 +34,28 @@ export class TransactionService {
   async completeTransaction(transactionId: string) {
     const transaction = await this.getTransaction(transactionId);
 
+    if (transaction.status !== TransactionStatus.WAITING_CONFIRMATION) {
+      throw new BadRequestException("Can't confirm transaction!");
+    }
+
     transaction.status = TransactionStatus.SUCCESS;
     await this.transactionsRepository.save(transaction);
+  }
+
+  async cancelTransaction(transactionId: string) {
+    const transaction = await this.getTransaction(transactionId);
+
+    if (
+      ![
+        TransactionStatus.WAITING_CONFIRMATION,
+        TransactionStatus.PENDING,
+      ].includes(transaction.status)
+    ) {
+      throw new BadRequestException("Can't confirm transaction!");
+    }
+    
+    transaction.status = TransactionStatus.CANCELLED;
+    return await this.transactionsRepository.save(transaction);
   }
 
   async completeTransactionByInvoiceId(invoiceId: string) {
@@ -41,6 +67,10 @@ export class TransactionService {
 
   async confirmTransactionAsUser(transactionId: string) {
     const transaction = await this.getTransaction(transactionId);
+
+    if (transaction.status !== TransactionStatus.PENDING) {
+      throw new BadRequestException("Can't confirm non pending transaction!");
+    }
 
     transaction.status = TransactionStatus.WAITING_CONFIRMATION;
     return await this.transactionsRepository.save(transaction);
