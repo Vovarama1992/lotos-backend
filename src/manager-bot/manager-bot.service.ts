@@ -76,13 +76,15 @@ export class AdminBotService {
 
     //bind this to function
     this.handleProcessCommand = this.handleProcessCommand.bind(this);
+
+    this.redisService.removeElementFromSet(AdminSetName, "mladoshin");
   }
 
   private async authenticateUser(msg: TelegramBot.Message) {
     let valid = true;
     try {
       await this.adminService.getUserByTelegramUsername(msg.chat.username);
-      await this.initChat(msg.chat.username, msg.chat.id);
+      await this.redisService.addElementToSet(AdminSetName, msg.chat.username);
     } catch (_err) {
       valid = false;
     }
@@ -97,8 +99,19 @@ export class AdminBotService {
     const isAuth = await this.checkUserAuth(msg.chat.username);
 
     if (!isAuth) {
-      if (!this.authenticateUser(msg)) {
+      const isSuccess = await this.authenticateUser(msg);
+      console.log(msg);
+      if (!isSuccess) {
         this.bot.sendMessage(msg.chat.id, "Доступ запрещён!");
+      } else {
+        try {
+          await this.getChatIdByUsername(msg.chat.username);
+        } catch (err) {
+          if (err instanceof TelegramBotChatNotFoundError) {
+            this.initChat(msg.chat.username, msg.chat.id);
+          }
+        }
+        handler(msg);
       }
     } else {
       try {
@@ -163,7 +176,7 @@ export class AdminBotService {
 
   private async sendGetAdminsResponse(chatId: number) {
     const admins = await this.redisService.getElementsFromSet(AdminSetName);
-    this.bot.sendMessage(chatId, admins.join(", "));
+    this.bot.sendMessage(chatId, admins.join(", ") || "Пусто");
   }
 
   private handleRecieveUsername(username: string) {
