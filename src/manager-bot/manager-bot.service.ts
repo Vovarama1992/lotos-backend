@@ -78,6 +78,18 @@ export class AdminBotService {
     this.handleProcessCommand = this.handleProcessCommand.bind(this);
   }
 
+  private async authenticateUser(msg: TelegramBot.Message) {
+    let valid = true;
+    try {
+      await this.adminService.getUserByTelegramUsername(msg.chat.username);
+      await this.initChat(msg.chat.username, msg.chat.id);
+    } catch (_err) {
+      valid = false;
+    }
+
+    return valid;
+  }
+
   private async authMiddleware(
     handler: (msg: TelegramBot.Message) => void,
     msg: TelegramBot.Message
@@ -85,7 +97,9 @@ export class AdminBotService {
     const isAuth = await this.checkUserAuth(msg.chat.username);
 
     if (!isAuth) {
-      this.bot.sendMessage(msg.chat.id, "Доступ запрещён!");
+      if (!this.authenticateUser(msg)) {
+        this.bot.sendMessage(msg.chat.id, "Доступ запрещён!");
+      }
     } else {
       try {
         await this.getChatIdByUsername(msg.chat.username);

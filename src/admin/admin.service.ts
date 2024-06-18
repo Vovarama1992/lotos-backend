@@ -39,17 +39,17 @@ import { BroadcastMessageDto } from "./dto/broadcast-message.dto";
 @Injectable()
 export class AdminService {
   constructor(
-    @Inject(forwardRef(()=>TransactionService))
+    @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
-    @Inject(forwardRef(()=>WithdrawHistoryService))
+    @Inject(forwardRef(() => WithdrawHistoryService))
     private readonly withdrawService: WithdrawHistoryService,
-    @Inject(forwardRef(()=>UserService))
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
-    @Inject(forwardRef(()=>RedisService))
+    @Inject(forwardRef(() => RedisService))
     private readonly redisService: RedisService,
-    @Inject(forwardRef(()=>SocketService))
+    @Inject(forwardRef(() => SocketService))
     private readonly socketService: SocketService,
-    @Inject(forwardRef(()=>NotificationService))
+    @Inject(forwardRef(() => NotificationService))
     private readonly notificationService: NotificationService,
     @InjectRepository(GamePlacement)
     private readonly gamePlacementRepository: Repository<GamePlacement>,
@@ -173,6 +173,12 @@ export class AdminService {
 
   async getUserProfileById(userId: string) {
     return await this.userService.getProfile(userId);
+  }
+
+  async getUserByTelegramUsername(tgUsername: string) {
+    return await this.userRepository.findOneByOrFail({
+      telegram_username: tgUsername,
+    });
   }
 
   async getPaymentDetails() {
