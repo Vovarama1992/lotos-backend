@@ -53,7 +53,7 @@ export class TransactionService {
     ) {
       throw new BadRequestException("Can't confirm transaction!");
     }
-    
+
     transaction.status = TransactionStatus.CANCELLED;
     return await this.transactionsRepository.save(transaction);
   }
@@ -65,7 +65,10 @@ export class TransactionService {
     return await this.transactionsRepository.save(transaction);
   }
 
-  async confirmTransactionAsUser(transactionId: string) {
+  async confirmTransactionAsUser(
+    transactionId: string,
+    recipientPaymentInfo: string
+  ) {
     const transaction = await this.getTransaction(transactionId);
 
     if (transaction.status !== TransactionStatus.PENDING) {
@@ -73,6 +76,7 @@ export class TransactionService {
     }
 
     transaction.status = TransactionStatus.WAITING_CONFIRMATION;
+    transaction.recipient_payment_info = recipientPaymentInfo;
     return await this.transactionsRepository.save(transaction);
   }
 

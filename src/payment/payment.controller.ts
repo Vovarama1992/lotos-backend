@@ -268,7 +268,10 @@ export class PaymentController {
     const { transaction_id } = confirmBankTransactionDto;
     try {
       const transaction =
-        await this.transactionService.confirmTransactionAsUser(transaction_id);
+        await this.transactionService.confirmTransactionAsUser(
+          transaction_id,
+          confirmBankTransactionDto.recipient_payment_info
+        );
 
       const adminUserIds = await this.userService.getAdminIds();
       this.notificationService.createNotifications(
@@ -305,16 +308,18 @@ export class PaymentController {
           type: transaction.type,
           amount: transaction.amount,
           timestamp: transaction.timestamp,
+          recipient_payment_info:
+            confirmBankTransactionDto.recipient_payment_info,
         })
       );
 
       return transaction;
     } catch (error) {
       console.log(error);
-      if(error instanceof BadRequestException){
+      if (error instanceof BadRequestException) {
         throw error;
       }
-      
+
       throw new NotFoundException("Transaction was not found!");
     }
   }

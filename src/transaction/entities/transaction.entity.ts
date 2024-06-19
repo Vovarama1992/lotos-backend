@@ -47,6 +47,10 @@ export class Transaction {
   @Column()
   amount: number;
 
+  @ApiProperty()
+  @Column({nullable: true})
+  recipient_payment_info: string;
+
   @ApiProperty({ enum: TransactionStatus })
   @Column({
     type: "enum",

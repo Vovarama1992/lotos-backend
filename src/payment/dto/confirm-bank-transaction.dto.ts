@@ -6,4 +6,9 @@ export default class ConfirmBankTransactionDto {
   @IsString()
   @IsNotEmpty()
   transaction_id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  recipient_payment_info: string;
 }

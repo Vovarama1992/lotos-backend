@@ -238,6 +238,7 @@ export class AdminBotService {
 
 <b>Email:</b>   ${data.user_email}
 <b>Метод:</b>   ${data.type}
+<b>Реквизиты получателя: </b>   ${data.recipient_payment_info}
 <b>Сумма:</b>   ${data.amount} RUB
 <b>Дата:</b>   ${moment(data.timestamp).format("DD.MM.YYYY, hh:mm:ss")}
 

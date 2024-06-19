@@ -36,8 +36,6 @@ export class NotificationService {
       })
     )?.map((user) => user.telegram_username);
 
-    console.log(adminUserIds, usernames);
-
     // filter for non empty usernames
     const filteredUsernames = usernames?.filter((username) => username?.length);
 

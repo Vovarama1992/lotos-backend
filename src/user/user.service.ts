@@ -251,13 +251,6 @@ export class UserService {
     await this.transactionsRepository.save(transaction);
   }
 
-  async confirmTransactionAsUser(transactionId: string) {
-    const transaction = await this.getTransaction(transactionId);
-
-    transaction.status = TransactionStatus.WAITING_CONFIRMATION;
-    return await this.transactionsRepository.save(transaction);
-  }
-
   async getTransaction(transactionId: string) {
     return await this.transactionsRepository.findOneOrFail({
       where: {
