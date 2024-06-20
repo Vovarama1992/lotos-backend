@@ -1,7 +1,8 @@
-import { Body, Get, Param, Post } from "@nestjs/common";
+import { Body, Get, Param, Post, Query } from "@nestjs/common";
 import { Controller } from "@nestjs/common";
 import { GamesService } from "./games.service";
 import { getLinkDTO } from "./decorators/getLink.dto";
+import { GetGamesQuesryDto } from "./dto/get-games-query.dto";
 
 @Controller("games")
 export class GamesController {
@@ -13,8 +14,8 @@ export class GamesController {
   }
 
   @Get()
-  async getData() {
-    return await this.gamesService.getData();
+  async getData(@Query() filterQuery: GetGamesQuesryDto) {
+    return await this.gamesService.getData(filterQuery);
   }
 
   @Get("/:category")

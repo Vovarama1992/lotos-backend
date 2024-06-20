@@ -1,16 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
-import { RedisService } from "src/redis/redis.service";
-import axios from "axios";
-import { getLinkDTO } from "./decorators/getLink.dto";
 import { InjectRepository } from "@nestjs/typeorm";
+import axios from "axios";
 import { FreespinService } from "src/freespin/freespin.service";
-import { OpenGameRequest } from "./decorators/openGame.dto";
 import { GameHistoryService } from "src/game-history/game-history.service";
-import { error } from "console";
-import { GamePlacement } from "./entities/game-placement.entity";
+import { RedisService } from "src/redis/redis.service";
 import { Repository } from "typeorm";
-import { User } from "src/user/entities/user.entity";
+import { getLinkDTO } from "./decorators/getLink.dto";
+import { OpenGameRequest } from "./decorators/openGame.dto";
+import { GamePlacement } from "./entities/game-placement.entity";
 
 @Injectable()
 export class GamesService {
@@ -22,12 +20,54 @@ export class GamesService {
     private readonly gamePlacementRepository: Repository<GamePlacement>
   ) {}
 
+  private filterUniqueGames(games: any[]) {
+    const gamesSet = new Set();
+
+    const addKey = (name: string, provider: string) =>
+      gamesSet.add(`${name}#${provider}`);
+
+    const isSetMember = (name: string, provider: string) =>
+      gamesSet.has(`${name}#${provider}`);
+
+    return games.filter((game) => {
+      const { name, label: provider } = game;
+      if (!isSetMember(name, provider)) {
+        addKey(name, provider);
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  private filterGames(
+    data: any[],
+    filter: { provider?: string; name?: string }
+  ) {
+    return data.filter((game) => {
+      let doesMatch = true;
+      if (filter.name) {
+        if (
+          !(game.name as string)
+            .toLowerCase()
+            .includes(filter.name.toLowerCase())
+        )
+          doesMatch = false;
+      }
+      if (filter.provider) {
+        if (game.label !== filter.provider) doesMatch = false;
+      }
+
+      return doesMatch;
+    });
+  }
+
   @Cron("0 */30 * * * *") // Запускается каждые 30 минут
   async fetchData() {
     const requestBody = {
       hall: "3203325",
       key: "kvadder",
-      cmd: "gamesList"
+      cmd: "gamesList",
     };
     const response = await axios.post(process.env.HALL_API, requestBody, {
       headers: { "Content-Type": "application/json" },
@@ -55,16 +95,20 @@ export class GamesService {
     if (cachedData) {
       response = gamesPlacement.map((placement) => {
         const game = cachedData.find((g) => g.id === placement.game_id);
-        return game ? { ...game, placement_id: placement.id, order: placement.order } : null;
+        return game
+          ? { ...game, placement_id: placement.id, order: placement.order }
+          : null;
       });
     }
 
     return response.filter((game) => game != null);
   }
 
-  async getData() {
+  async getData(filter: { provider?: string; name?: string }) {
     const cachedData = await this.redisService.get("apiData");
-    return cachedData ? JSON.parse(cachedData) : null;
+    return cachedData
+      ? this.filterGames(this.filterUniqueGames(JSON.parse(cachedData)), filter)
+      : null;
   }
 
   async getProviders() {

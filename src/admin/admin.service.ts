@@ -35,6 +35,7 @@ import { SavePaymentDetailsDto } from "./dto/save-payment-details.dto";
 import { SendMessageToUserDto } from "./dto/send-message-to-user.dto";
 import { User } from "src/user/entities/user.entity";
 import { BroadcastMessageDto } from "./dto/broadcast-message.dto";
+import { AddGamesToCategoryDto } from "./dto/add-games-to-category.dto";
 
 @Injectable()
 export class AdminService {
@@ -126,6 +127,45 @@ export class AdminService {
     }
 
     return await this.gamePlacementRepository.save(gamePlacement);
+  }
+
+  async addGamesToCategory(addGamesToCategoryDto: AddGamesToCategoryDto) {
+    const currentGamesInCategory = await this.gamePlacementRepository.find({
+      where: {
+        category: addGamesToCategoryDto.category,
+      },
+    });
+
+    let currentMaxOrder = -1;
+    if (currentGamesInCategory.length > 0) {
+      currentMaxOrder = Math.max(
+        ...currentGamesInCategory.map((game) => game.order)
+      );
+    }
+
+    const currentGamesSet = new Set(
+      currentGamesInCategory.map((game) => game.game_id)
+    );
+
+    const newGamesInCategory = addGamesToCategoryDto.games.filter(
+      (game) => !currentGamesSet.has(game.game_id)
+    );
+
+    const gamePlacements = newGamesInCategory.map(
+      (game) =>
+        new GamePlacement({
+          ...game,
+          category: addGamesToCategoryDto.category,
+          order: game.order + currentMaxOrder + 1,
+        })
+    );
+
+    console.log(
+      currentGamesInCategory.map((game) => game.order),
+      gamePlacements
+    );
+
+    return await this.gamePlacementRepository.save(gamePlacements);
   }
 
   async deleteGameFromCategory(gamePlacementId: string) {

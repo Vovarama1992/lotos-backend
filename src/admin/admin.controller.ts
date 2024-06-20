@@ -35,6 +35,7 @@ import { CreateManagerDto } from "src/manager/dto/create-manager.dto";
 import { AddGameToCategoryDto } from "./dto/add-game-to-category.dto";
 import { SaveGamesPlacementDto } from "./dto/save-games-placement.dto";
 import { BroadcastMessageDto } from "./dto/broadcast-message.dto";
+import { AddGamesToCategoryDto } from "./dto/add-games-to-category.dto";
 
 @ApiTags("admin")
 @UseGuards(RolesGuard)
@@ -58,6 +59,12 @@ export class AdminController {
   @Roles([UserRole.ADMIN])
   addGameToCategory(@Body() addGameToCategoryDto: AddGameToCategoryDto) {
     return this.adminService.addGameToCategory(addGameToCategoryDto);
+  }
+
+  @Post("games")
+  @Roles([UserRole.ADMIN])
+  addGamesToCategory(@Body() addGamesToCategoryDto: AddGamesToCategoryDto) {
+    return this.adminService.addGamesToCategory(addGamesToCategoryDto);
   }
 
   @Patch("save-games-placement")
