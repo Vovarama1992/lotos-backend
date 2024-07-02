@@ -36,6 +36,12 @@ import { SendMessageToUserDto } from "./dto/send-message-to-user.dto";
 import { User } from "src/user/entities/user.entity";
 import { BroadcastMessageDto } from "./dto/broadcast-message.dto";
 import { AddGamesToCategoryDto } from "./dto/add-games-to-category.dto";
+import {
+  PaymentDetailType,
+  PaymentDetails,
+} from "src/payment/entities/paymentDetails.entity";
+import { SaveAppConfigDto } from "./dto/save-app-config.dto";
+import { ConfigService } from "src/config/config.service";
 
 @Injectable()
 export class AdminService {
@@ -55,8 +61,19 @@ export class AdminService {
     @InjectRepository(GamePlacement)
     private readonly gamePlacementRepository: Repository<GamePlacement>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(PaymentDetails)
+    private readonly paymentDetailsRepository: Repository<PaymentDetails>,
+    private readonly configService: ConfigService
   ) {}
+
+  async saveAppConfig(saveAppConfigDto: SaveAppConfigDto) {
+    return await this.configService.save(saveAppConfigDto);
+  }
+
+  async getAppConfig() {
+    return await this.configService.get();
+  }
 
   async broadCastMessage(broadCastMessageDto: BroadcastMessageDto) {
     const userIds = (
@@ -222,23 +239,36 @@ export class AdminService {
   }
 
   async getPaymentDetails() {
-    let response = {
-      card: [],
-      sbp: [],
-    };
-    const data = await this.redisService.getJSON("admin/payment-details");
-    if (data) {
-      response = data;
-    }
-
-    return response;
+    const data = await this.paymentDetailsRepository.find();
+    return data;
   }
 
   async setPaymentDetails(setPaymentDetailsDto: SavePaymentDetailsDto) {
-    return this.redisService.setJSON(
-      "admin/payment-details",
-      setPaymentDetailsDto
+    setPaymentDetailsDto.data.forEach((dataItem) => {
+      if (dataItem.id.includes("new-")) {
+        delete dataItem.id;
+      }
+    });
+
+    const updatedRecords = setPaymentDetailsDto.data.filter(
+      (el) => !el.id?.includes("del-") || !el.id
     );
+
+    const removedRecords = setPaymentDetailsDto.data.filter((el) =>
+      el.id?.includes("del-")
+    );
+
+    const res = await this.paymentDetailsRepository.save(updatedRecords);
+
+    const removedRecordIds = removedRecords.map((el) => el.id);
+
+    for (const id of removedRecordIds) {
+      await this.paymentDetailsRepository.delete({
+        id: id.replace("del-", ""),
+      });
+    }
+
+    return res;
   }
 
   async getTransactions(filter: GetTransactionsQueryDto) {

@@ -2,8 +2,7 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
-  RequestMethod,
-  forwardRef,
+  RequestMethod
 } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
@@ -12,7 +11,6 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthMiddleware } from "./auth/middleware/auth.middleware";
 import { FreespinModule } from "./freespin/freespin.module";
 import { GamesModule } from "./games/games.module";
-import { GamesService } from "./games/games.service";
 import { RedisService } from "./redis/redis.service";
 import { UsersModule } from "./user/user.module";
 
@@ -24,26 +22,25 @@ import { GameHistory } from "./game-history/entities/game-history.entity";
 import { GameHistoryModule } from "./game-history/game-history.module";
 import { User } from "./user/entities/user.entity";
 //import { MailModule } from './mail/mail.module';
-import { AdminModule } from './admin/admin.module';
+import { AdminModule } from "./admin/admin.module";
 import { AppGateway } from "./app.gateway";
-import { CryptocloudService } from './cryptocloud/cryptocloud.service';
-import { GatewayModule } from "./gateway/gateway.module";
-import { PaymentModule } from './payment/payment.module';
-import { TransactionModule } from './transaction/transaction.module';
-import { WithdrawHistoryModule } from './withdraw-history/withdraw-history.module';
-import { SocketService } from "./gateway/gateway.service";
-import { NotificationModule } from './notification/notification.module';
-import { Transaction } from "./transaction/entities/transaction.entity";
-import { Notification } from "./notification/entities/notification.entity";
-import { ManagerModule } from './manager/manager.module';
-import { ReferralInviteModule } from './referral-invite/referral-invite.module';
-import { ReferralInvite } from "./referral-invite/entities/referral-invite.entity";
+import { CryptocloudService } from "./cryptocloud/cryptocloud.service";
 import { GamePlacement } from "./games/entities/game-placement.entity";
-import { UserReferralService } from './user-referral/user-referral.service';
+import { GatewayModule } from "./gateway/gateway.module";
+import { ManagerBotModule } from "./manager-bot/manager-bot.module";
+import { ManagerModule } from "./manager/manager.module";
+import { Notification } from "./notification/entities/notification.entity";
+import { NotificationModule } from "./notification/notification.module";
+import { DepositSession } from "./payment/entities/depositSession.entity";
+import { PaymentDetails } from "./payment/entities/paymentDetails.entity";
+import { PaymentModule } from "./payment/payment.module";
+import { ReferralInvite } from "./referral-invite/entities/referral-invite.entity";
+import { ReferralInviteModule } from "./referral-invite/referral-invite.module";
+import { Transaction } from "./transaction/entities/transaction.entity";
+import { TransactionModule } from "./transaction/transaction.module";
 import { UserReferral } from "./user-referral/entities/user-referral.entity";
 import { UserReferralModule } from "./user-referral/user-referral.module";
-import { ManagerBotModule } from './manager-bot/manager-bot.module';
-import { AdminService } from "./admin/admin.service";
+import { WithdrawHistoryModule } from "./withdraw-history/withdraw-history.module";
 
 @Module({
   imports: [
@@ -60,12 +57,24 @@ import { AdminService } from "./admin/admin.service";
         password: configService.getOrThrow("POSTGRES_PASSWORD"),
         username: configService.getOrThrow("POSTGRES_USER"),
         autoLoadEntities: true,
-        entities: [User, Freespin, Card, GameHistory, Transaction, Notification, ReferralInvite, GamePlacement, UserReferral],
+        entities: [
+          User,
+          Freespin,
+          Card,
+          GameHistory,
+          Transaction,
+          Notification,
+          ReferralInvite,
+          GamePlacement,
+          UserReferral,
+          DepositSession,
+          PaymentDetails,
+        ],
         database: configService.getOrThrow("POSTGRES_DB"),
         synchronize: configService.getOrThrow("TYPEORM_AUTOMIGRATE"),
         logging: configService.getOrThrow("TYPEORM_LOGGING"),
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
     }),
     UsersModule,
     GamesModule,
@@ -82,11 +91,12 @@ import { AdminService } from "./admin/admin.service";
     ManagerModule,
     ReferralInviteModule,
     UserReferralModule,
-    ManagerBotModule
+    ManagerBotModule,
+    ConfigModule
     //MailModule
   ],
   controllers: [],
-  providers: [RedisService, AppGateway, CryptocloudService],
+  providers: [RedisService, AppGateway, CryptocloudService, ConfigService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

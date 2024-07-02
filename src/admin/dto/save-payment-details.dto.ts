@@ -1,24 +1,32 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsNotEmpty, IsString, ValidateNested } from "class-validator";
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from "class-validator";
+import { PaymentDetailType } from "src/payment/entities/paymentDetails.entity";
 
 export class SavePaymentDetailsDto {
-  @ApiProperty({ type: () => CardDetails, isArray: true })
+  @ApiProperty({ type: () => PaymentDetailsDto, isArray: true })
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CardDetails)
-  card: CardDetails[];
-
-  @ApiProperty({ type: () => SbpDetails, isArray: true })
-  @IsNotEmpty()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SbpDetails)
-  sbp: SbpDetails[];
+  @Type(() => PaymentDetailsDto)
+  data: PaymentDetailsDto[];
 }
 
-class CardDetails {
+class PaymentDetailsDto {
+  @ApiProperty({ type: "string" })
+  @IsOptional()
+  @IsString()
+  //@IsUUID()
+  id: string;
+
   @ApiProperty({ type: "string" })
   @IsString()
   @IsNotEmpty()
@@ -27,17 +35,43 @@ class CardDetails {
   @ApiProperty({ type: "string" })
   @IsString()
   @IsNotEmpty()
-  card: string;
+  data: string;
+
+  @ApiProperty({ enum: PaymentDetailType })
+  @IsEnum(PaymentDetailType)
+  type: PaymentDetailType;
 }
 
-class SbpDetails {
-  @ApiProperty({ type: "string" })
-  @IsString()
-  @IsNotEmpty()
-  bank: string;
+// class CardDetails {
+//   @ApiProperty({ type: "string" })
+//   @IsOptional()
+//   @IsUUID()
+//   id: string;
 
-  @ApiProperty({ type: "string" })
-  @IsString()
-  @IsNotEmpty()
-  tel: string;
-}
+//   @ApiProperty({ type: "string" })
+//   @IsString()
+//   @IsNotEmpty()
+//   bank: string;
+
+//   @ApiProperty({ type: "string" })
+//   @IsString()
+//   @IsNotEmpty()
+//   card: string;
+// }
+
+// class SbpDetails {
+//   @ApiProperty({ type: "string" })
+//   @IsOptional()
+//   @IsUUID()
+//   id: string;
+
+//   @ApiProperty({ type: "string" })
+//   @IsString()
+//   @IsNotEmpty()
+//   bank: string;
+
+//   @ApiProperty({ type: "string" })
+//   @IsString()
+//   @IsNotEmpty()
+//   tel: string;
+// }

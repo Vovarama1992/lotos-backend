@@ -39,6 +39,7 @@ export class RedisService {
 
   async setJSON(key: string, value: Record<string, any>) {
     await this.client.set(key, JSON.stringify(value));
+    return value
   }
 
   async getJSON(key: string) {

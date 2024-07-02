@@ -36,6 +36,7 @@ import { AddGameToCategoryDto } from "./dto/add-game-to-category.dto";
 import { SaveGamesPlacementDto } from "./dto/save-games-placement.dto";
 import { BroadcastMessageDto } from "./dto/broadcast-message.dto";
 import { AddGamesToCategoryDto } from "./dto/add-games-to-category.dto";
+import { SaveAppConfigDto } from "./dto/save-app-config.dto";
 
 @ApiTags("admin")
 @UseGuards(RolesGuard)
@@ -133,6 +134,36 @@ export class AdminController {
   })
   setPaymentDetails(@Body() savePaymentDetailsDto: SavePaymentDetailsDto) {
     return this.adminService.setPaymentDetails(savePaymentDetailsDto);
+  }
+
+  @Post("app-config")
+  @Roles([UserRole.ADMIN])
+  @ApiOperation({ summary: "Админ - сохранить конфигурацию сервиса" })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован, либо нет прав доступа",
+  })
+  @ApiOkResponse({
+    description: "Текущая конфигурация",
+    type: GetTransactionResponse,
+  })
+  saveAppConfig(@Body() saveAppConfigDto: SaveAppConfigDto) {
+    return this.adminService.saveAppConfig(saveAppConfigDto);
+  }
+
+  @Get("app-config")
+  @Roles([UserRole.ADMIN])
+  @ApiOperation({ summary: "Админ - получить конфигурацию сервиса" })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован, либо нет прав доступа",
+  })
+  @ApiOkResponse({
+    description: "Текущая конфигурация",
+    type: GetTransactionResponse,
+  })
+  getAppConfig() {
+    return this.adminService.getAppConfig();
   }
 
   @Post("cancel-withdraw")
