@@ -43,8 +43,8 @@ export class AuthService {
 
     const isNew = !existingUser;
 
-    if (!this.checkSignature(data))
-      throw new ForbiddenException("Forbidden. Hash mismatch!");
+    // if (!this.checkSignature(data))
+    //   throw new ForbiddenException("Forbidden. Hash mismatch!");
 
     if (!this.checkAuthExpired(data.auth_date, 60)) {
       throw new ForbiddenException("Forbidden. Auth expired!");
