@@ -9,6 +9,7 @@ import {
   IsUUID,
   ValidateNested,
 } from "class-validator";
+import { DepositMode } from "src/config/entities/config.entity";
 import { PaymentDetailType } from "src/payment/entities/paymentDetails.entity";
 
 export class SavePaymentDetailsDto {
@@ -36,6 +37,11 @@ class PaymentDetailsDto {
   @IsString()
   @IsNotEmpty()
   data: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsEnum(DepositMode)
+  mode?: DepositMode;
 
   @ApiProperty({ enum: PaymentDetailType })
   @IsEnum(PaymentDetailType)

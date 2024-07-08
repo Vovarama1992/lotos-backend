@@ -65,10 +65,7 @@ export class TransactionService {
     return await this.transactionsRepository.save(transaction);
   }
 
-  async confirmTransactionAsUser(
-    transactionId: string,
-    recipientPaymentInfo: string
-  ) {
+  async confirmTransactionAsUser(transactionId: string) {
     const transaction = await this.getTransaction(transactionId);
 
     if (transaction.status !== TransactionStatus.PENDING) {
@@ -76,7 +73,6 @@ export class TransactionService {
     }
 
     transaction.status = TransactionStatus.WAITING_CONFIRMATION;
-    transaction.recipient_payment_info = recipientPaymentInfo;
     return await this.transactionsRepository.save(transaction);
   }
 
@@ -85,7 +81,7 @@ export class TransactionService {
       where: {
         id: transactionId,
       },
-      relations: { user: true },
+      relations: { user: true, payment_details: true },
     });
   }
 

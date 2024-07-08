@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { PaymentDetails } from "./paymentDetails.entity";
 
 export class PaymentDetailsDto {
   @ApiProperty({ required: false })
@@ -21,8 +22,8 @@ export class BankInvoice {
   @ApiProperty()
   currency: string;
 
-  @ApiProperty({ type: () => PaymentDetailsDto })
-  payment_details: PaymentDetailsDto;
+  @ApiProperty({ type: () => PaymentDetails })
+  payment_details: PaymentDetails;
 
   constructor(invoice: Partial<BankInvoice>) {
     Object.assign(this, invoice);

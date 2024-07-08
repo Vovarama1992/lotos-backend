@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString, Min, isString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, IsUUID, Min, isString } from "class-validator";
 
 export default class CreateBankInvoiceDto {
   @ApiProperty()
@@ -8,7 +8,7 @@ export default class CreateBankInvoiceDto {
   amount: number;
 
   @ApiProperty()
-  @IsString()
   @IsNotEmpty()
-  method: string;
+  @IsUUID()
+  payment_detail_id: string; 
 }

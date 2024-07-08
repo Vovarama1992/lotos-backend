@@ -8,7 +8,10 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { verify } from "jsonwebtoken";
-import { TransactionStatus } from "src/transaction/entities/transaction.entity";
+import {
+  Transaction,
+  TransactionStatus,
+} from "src/transaction/entities/transaction.entity";
 import { TransactionService } from "src/transaction/transaction.service";
 import { MoreThan, Repository } from "typeorm";
 import { v4 as uuid } from "uuid";
@@ -34,6 +37,7 @@ import { SendIncomingMessage } from "src/manager-bot/entities/incoming-message.e
 import axios from "axios";
 import * as https from "https";
 import { AdminService } from "src/admin/admin.service";
+import { PaymentDetailMethod } from "./dto/get-payment-details-query.dto";
 
 @Injectable()
 export class PaymentService {
@@ -68,44 +72,43 @@ export class PaymentService {
     return selectedCard;
   }
 
-  private async findNonReservedCard(reservedCardIds: string[]) {
-    const paymentInfo = await this.paymentDetailsRepository.find();
-    const cards = paymentInfo.filter((p) => p.type === PaymentDetailType.CARD);
-
-    const availableCards = [] as PaymentDetails[];
-    cards.forEach((card, idx) => {
-      if (!reservedCardIds.includes(card.id)) {
-        availableCards.push(card);
-      }
-    });
-
-    return availableCards;
-  }
-
-  private async findAvailableCard(amount: number) {
+  private async isCardAvailable(amount: number, paymentDetailId: string) {
     const now = new Date();
     const sessions = await this.depositSessionRepository.find({
-      where: { amount, expiration_date: MoreThan(now.toISOString()) },
+      where: {
+        amount,
+        expiration_date: MoreThan(now.toISOString()),
+        card: { id: paymentDetailId },
+      },
       relations: { card: true },
     });
 
-    const reservedCardIds = sessions.map((session) => session.card.id);
-
-    const availableCards = await this.findNonReservedCard(reservedCardIds);
-    if (!availableCards.length) throw new Error("No available cards");
-
-    return this.selectCardWithHighestPriority(availableCards);
+    return sessions.length === 0;
   }
 
-  private async createSession(userId: string, amount: number) {
+  private async createSession(
+    userId: string,
+    amount: number,
+    paymentDetails: PaymentDetails
+  ) {
     try {
-      const card = await this.findAvailableCard(amount);
+      const isCardAvailable = await this.isCardAvailable(
+        amount,
+        paymentDetails.id
+      );
+
+      if (!isCardAvailable) {
+        throw new ConflictException(
+          "Selected card with selected amount is not available"
+        );
+      }
+
       const now = Date.now();
       const expirationDate = new Date(now + 10 * 60 * 1000);
 
       const session = new DepositSession({
         amount,
-        card: card as any,
+        card: paymentDetails,
         expiration_date: expirationDate.toISOString(),
         user: { id: userId } as any,
       });
@@ -119,42 +122,24 @@ export class PaymentService {
   }
 
   private async createManualDepositSession(
-    createBankInvoiceDto: CreateBankInvoiceDto,
+    amount: number,
+    paymentDetails: PaymentDetails,
     user: User,
     config: CasinoConfig
   ) {
-    let paymentDetailType: PaymentDetailType;
-    if (createBankInvoiceDto.method === "card") {
-      paymentDetailType = PaymentDetailType.CARD;
-    } else if (createBankInvoiceDto.method === "sbp") {
-      paymentDetailType = PaymentDetailType.SBP;
-    }
-
-    const paymentInfo = await this.paymentDetailsRepository.find({
-      where: { type: paymentDetailType },
-    });
-
-    if (!paymentInfo.length)
-      throw new InternalServerErrorException("No payment methods available!");
-
-    let paymentDetails = {};
-    if (createBankInvoiceDto.method === "card") {
-      paymentDetails = { card: paymentInfo };
-    } else if (createBankInvoiceDto.method === "sbp") {
-      paymentDetails = { sbp: paymentInfo };
-    }
-
     const invoice = new BankInvoice({
-      ...createBankInvoiceDto,
+      amount,
       payment_details: paymentDetails,
       timestamp: new Date(),
     });
+
     const transaction = await this.transactionService.addTransaction(user.id, {
       invoice_id: uuid(),
-      amount: createBankInvoiceDto.amount,
-      method: createBankInvoiceDto.method,
+      amount,
+      method: paymentDetails.type === PaymentDetailType.CARD ? "card" : "sbp",
       type: "bank",
       status: TransactionStatus.PENDING,
+      payment_details: paymentDetails,
     });
 
     const adminUserIds = await this.userService.getAdminIds();
@@ -193,15 +178,13 @@ export class PaymentService {
   }
 
   private async createAutomaticDepositSession(
-    createBankInvoiceDto: CreateBankInvoiceDto,
+    amount: number,
+    paymentDetails: PaymentDetails,
     user: User,
     config: CasinoConfig
   ) {
     //create session with payment details
-    const session = await this.createSession(
-      user.id,
-      createBankInvoiceDto.amount
-    );
+    const session = await this.createSession(user.id, amount, paymentDetails);
 
     // optionally setTimeout for 10 minutes and delete the deposit session
     if (config.deleteExpiredDepositSessions) {
@@ -213,40 +196,57 @@ export class PaymentService {
 
     // create bank invoice object
     const invoice = new BankInvoice({
-      ...createBankInvoiceDto,
-      payment_details: { card: session.card.data },
+      amount,
+      payment_details: paymentDetails,
       timestamp: new Date(),
     });
 
     // create transaction in db
     const transaction = await this.transactionService.addTransaction(user.id, {
       invoice_id: uuid(),
-      amount: createBankInvoiceDto.amount,
-      method: createBankInvoiceDto.method,
+      amount: amount,
+      method: paymentDetails.type === PaymentDetailType.CARD ? "card" : "sbp",
       type: "bank",
       status: TransactionStatus.PENDING,
+      payment_details: paymentDetails,
     });
 
     return { invoice, transaction, session };
+  }
+
+  async getPaymentDetails(method: PaymentDetailMethod) {
+    let type = PaymentDetailType.CARD;
+    if (method === PaymentDetailMethod.SBP) {
+      type = PaymentDetailType.SBP;
+    }
+
+    const data = await this.paymentDetailsRepository.find({ where: { type } });
+    return data;
   }
 
   async createBankDepositSession(
     createBankInvoiceDto: CreateBankInvoiceDto,
     user: User
   ) {
+    const { amount, payment_detail_id } = createBankInvoiceDto;
     //choose between automatic and manual
     const appConfig = await this.configService.get();
+    const paymentDetails = await this.paymentDetailsRepository.findOneByOrFail({
+      id: payment_detail_id,
+    });
 
     let result = null;
-    if (appConfig.depositMode === DepositMode.AUTO) {
+    if (paymentDetails.mode === DepositMode.AUTO) {
       result = this.createAutomaticDepositSession(
-        createBankInvoiceDto,
+        amount,
+        paymentDetails,
         user,
         appConfig
       );
-    } else if (appConfig.depositMode === DepositMode.MANUAL) {
+    } else if (paymentDetails.mode === DepositMode.MANUAL) {
       result = this.createManualDepositSession(
-        createBankInvoiceDto,
+        amount,
+        paymentDetails,
         user,
         appConfig
       );
@@ -275,7 +275,7 @@ export class PaymentService {
           toCardNum: cardNum.slice(cardNum.length - 4),
           operationAmount: amount,
         },
-        { httpsAgent: agent }
+        { httpsAgent: agent, timeout: 10000 }
       );
 
       console.log("rows");
@@ -296,91 +296,66 @@ export class PaymentService {
     }
   }
 
-  private async confirmManualBankDeposit(
-    confirmBankTransactionDto: ConfirmBankTransactionDto,
-    user: User
-  ) {
-    const { transaction_id } = confirmBankTransactionDto;
-
-    try {
-      const transaction =
-        await this.transactionService.confirmTransactionAsUser(
-          transaction_id,
-          confirmBankTransactionDto.recipient_payment_info
-        );
-
-      const adminUserIds = await this.userService.getAdminIds();
-      this.notificationService.createNotifications(
-        [user.id],
-        SocketEvent.PAYMENT_BANK_WAITING_CONFIRMATION,
-        {
-          message: "Ожидание подтверждения пополнения админом",
-          status: NotificationStatus.INFO,
-          type: NotificationType.SYSTEM,
-          data: {
-            transaction_id: transaction.id,
-          },
-        }
-      );
-
-      this.notificationService.createNotifications(
-        adminUserIds,
-        SocketEvent.PAYMENT_BANK_WAITING_CONFIRMATION,
-        {
-          message: `Пользователь ${user.email} ожидает вашего подтверждения платежа`,
-          status: NotificationStatus.INFO,
-          type: NotificationType.SYSTEM,
-          data: {
-            transaction_id: transaction.id,
-          },
-        }
-      );
-
-      this.notificationService.sendAdminTelegramNotifications(
-        adminUserIds,
-        new SendIncomingMessage({
+  private async confirmManualBankDeposit(transaction: Transaction, user: User) {
+    await this.transactionService.confirmTransactionAsUser(transaction.id);
+    const adminUserIds = await this.userService.getAdminIds();
+    this.notificationService.createNotifications(
+      [user.id],
+      SocketEvent.PAYMENT_BANK_WAITING_CONFIRMATION,
+      {
+        message: "Ожидание подтверждения пополнения админом",
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+        data: {
           transaction_id: transaction.id,
-          user_email: transaction.user.email,
-          type: transaction.type,
-          amount: transaction.amount,
-          timestamp: transaction.timestamp,
-          recipient_payment_info:
-            confirmBankTransactionDto.recipient_payment_info,
-        })
-      );
-
-      return transaction;
-    } catch (error) {
-      console.log(error);
-      if (error instanceof BadRequestException) {
-        throw error;
+        },
       }
+    );
 
-      throw new NotFoundException("Transaction was not found!");
-    }
+    this.notificationService.createNotifications(
+      adminUserIds,
+      SocketEvent.PAYMENT_BANK_WAITING_CONFIRMATION,
+      {
+        message: `Пользователь ${user.email} ожидает вашего подтверждения платежа`,
+        status: NotificationStatus.INFO,
+        type: NotificationType.SYSTEM,
+        data: {
+          transaction_id: transaction.id,
+        },
+      }
+    );
+
+    this.notificationService.sendAdminTelegramNotifications(
+      adminUserIds,
+      new SendIncomingMessage({
+        transaction_id: transaction.id,
+        user_email: transaction.user.email,
+        type: transaction.type,
+        amount: transaction.amount,
+        timestamp: transaction.timestamp,
+        recipient_payment_info: transaction.payment_details.data,
+      })
+    );
+
+    return transaction;
   }
 
-  private async confirmAutoBankDeposit(
-    confirmBankTransactionDto: ConfirmBankTransactionDto,
-    user: User
-  ) {
-    const { transaction_id } = confirmBankTransactionDto;
-
-    const transaction =
-      await this.transactionService.getTransaction(transaction_id);
-
+  private async confirmAutoBankDeposit(transaction: Transaction, user: User) {
     if (transaction.status !== TransactionStatus.PENDING) {
       throw new ForbiddenException("Transaction is not active");
     }
 
-    const depositSession = await this.depositSessionRepository.findOneOrFail({
+    const depositSession = await this.depositSessionRepository.findOne({
       where: {
         amount: transaction.amount,
-        card: { data: confirmBankTransactionDto.recipient_payment_info },
+        card: { id: transaction.payment_details.id },
         user: { id: user.id },
       },
       relations: { card: true },
     });
+
+    if (!depositSession)
+      throw new NotFoundException("Deposit session not found!");
 
     if (new Date() >= new Date(depositSession.expiration_date)) {
       throw new ForbiddenException("Expired deposit session!");
@@ -391,26 +366,30 @@ export class PaymentService {
       throw new ForbiddenException("No deposit recieved!");
     }
 
-    await this.transactionService.confirmTransactionAsUser(
-      transaction_id,
-      confirmBankTransactionDto.recipient_payment_info
-    );
+    await this.transactionService.confirmTransactionAsUser(transaction.id);
 
-    return await this.adminService.confirmBankTransaction(transaction_id);
+    return await this.adminService.confirmBankTransaction(transaction.id);
   }
 
   async confirmBankDepositByUser(
     confirmBankTransactionDto: ConfirmBankTransactionDto,
     user: User
   ) {
-    const { depositMode } = await this.configService.get();
-    if (depositMode === DepositMode.AUTO) {
-      return await this.confirmAutoBankDeposit(confirmBankTransactionDto, user);
-    } else {
-      return await this.confirmManualBankDeposit(
-        confirmBankTransactionDto,
-        user
+    let transaction: Transaction;
+    try {
+      transaction = await this.transactionService.getTransaction(
+        confirmBankTransactionDto.transaction_id
       );
+    } catch (error) {
+      throw new NotFoundException("Transaction was not found!");
+    }
+
+    const { mode } = transaction.payment_details;
+
+    if (mode === DepositMode.AUTO) {
+      return await this.confirmAutoBankDeposit(transaction, user);
+    } else {
+      return await this.confirmManualBankDeposit(transaction, user);
     }
   }
 }

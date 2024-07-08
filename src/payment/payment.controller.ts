@@ -3,8 +3,10 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
   NotFoundException,
   Post,
+  Query,
   Req,
   UseGuards,
 } from "@nestjs/common";
@@ -39,6 +41,7 @@ import { GetBankInvoiceResponseDto } from "./dto/get-bank-invoice-response.dto";
 import { GetCryptoInvoiceResponseDto } from "./dto/get-crypto-invoice-response.dto";
 import { BankInvoice } from "./entities/bankInvoice.entity";
 import { PaymentService } from "./payment.service";
+import { GetPaymentDetailsQueryDto } from "./dto/get-payment-details-query.dto";
 
 @ApiTags("payment")
 @UseGuards(RolesGuard)
@@ -177,6 +180,23 @@ export class PaymentController {
         }
       );
     }
+  }
+
+  @Get("details")
+  @ApiOperation({
+    summary: "Платежи - получить все доступные реквизиты для оплаты",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiOkResponse({
+    description: "Реквизиты",
+    type: GetBankInvoiceResponseDto,
+  })
+  getPaymentDetails(@Query() query: GetPaymentDetailsQueryDto){
+    const {method} = query;
+    return this.paymentService.getPaymentDetails(method);
   }
 
   @Post("bank")

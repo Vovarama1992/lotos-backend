@@ -1,7 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { User } from "src/user/entities/user.entity";
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { DepositSession } from "./depositSession.entity";
+import { DepositMode } from "src/config/entities/config.entity";
+import { IsEnum } from "class-validator";
+import { Transaction } from "src/transaction/entities/transaction.entity";
 
 export enum PaymentDetailType {
   CARD,
@@ -25,14 +34,24 @@ export class PaymentDetails {
   @Column()
   bank: string;
 
-  @Column({default: 1})
+  @ApiProperty()
+  @Column({ enum: DepositMode, default: DepositMode.MANUAL })
+  mode: DepositMode;
+
+  @Column({ default: 1 })
   priority: number;
 
   @OneToMany(() => DepositSession, (depositSession) => depositSession.card, {
     cascade: true,
-    onDelete: "CASCADE"
+    onDelete: "CASCADE",
   })
   deposit_sessions: DepositSession[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.payment_details, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  transactions: Transaction[];
 
   constructor(data: Partial<PaymentDetails>) {
     Object.assign(this, data);

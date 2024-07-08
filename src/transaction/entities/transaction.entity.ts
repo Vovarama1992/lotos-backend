@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { PaymentDetails } from "src/payment/entities/paymentDetails.entity";
 import { User } from "src/user/entities/user.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
@@ -48,8 +49,15 @@ export class Transaction {
   amount: number;
 
   @ApiProperty()
-  @Column({nullable: true})
+  @Column({ nullable: true })
   recipient_payment_info: string;
+
+  @ApiProperty()
+  @ManyToOne(() => PaymentDetails, (p) => p.transactions, {
+    onDelete: "SET NULL",
+    nullable: true,
+  })
+  payment_details: PaymentDetails;
 
   @ApiProperty({ enum: TransactionStatus })
   @Column({
