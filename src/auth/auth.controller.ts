@@ -89,6 +89,7 @@ export class AuthController {
     if (email) {
       if (existingUser) {
         let isValid = await bcrypt.compare(password, existingUser.password);
+
         if (!isValid)
           throw new ForbiddenException("Login or password is invalid");
       } else {

@@ -66,7 +66,11 @@ export class WithdrawHistoryService {
   ) {
     return await this.withdrawRepository.findAndCount({
       where: { ...filter },
-      relations: { user: options.includeUser },
+      order: {
+        timestamp: "DESC"
+      },
+      relations: { user: options?.includeUser },
     });
   }
+
 }

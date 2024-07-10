@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { GetUserReferralType } from "src/user/dto/get-user-referrals-quesry.dto";
+import { GetUserReferralType } from "src/user/dto/get-user-referrals-query.dto";
 import { User } from "src/user/entities/user.entity";
 import { Repository } from "typeorm";
 import { UserReferral } from "./entities/user-referral.entity";

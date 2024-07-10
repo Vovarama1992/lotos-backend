@@ -38,8 +38,10 @@ import { Between } from "typeorm";
 import {
   GetUserReferralType,
   GetUserReferralsQueryDto,
-} from "./dto/get-user-referrals-quesry.dto";
+} from "./dto/get-user-referrals-query.dto";
 import { GetUserReferralsDto } from "./dto/get-user-referrals.dto";
+import { GetWalletHistoryQueryDto } from "./dto/get-wallet-history.dto";
+import { GetWalletHistoryResponseDto } from "./dto/get-wallet-history-response.dto";
 
 @ApiTags("user")
 @ApiBearerAuth("JWT")
@@ -302,5 +304,25 @@ export class UserController {
       req.user,
       cancelWithdrawMoneyDto.withdraw_transaction_id
     );
+  }
+
+  @Get("/wallet-history")
+  @ApiOperation({
+    summary: "Пользователь - получить депозиты и выводы в интервале времени",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Дата начала больше даты конца",
+  })
+  @ApiOkResponse({
+    description: "Депозиты и выводы",
+    type: GetWalletHistoryResponseDto,
+  })
+  getWalletHistory(@Query() query: GetWalletHistoryQueryDto, @Req() req: any) {
+    return this.userService.getWalletHistory(req.user.id, query);
   }
 }

@@ -34,9 +34,11 @@ import { User } from "./entities/user.entity";
 import * as moment from "moment";
 import { UserReferralService } from "src/user-referral/user-referral.service";
 import { v4 as uuid } from "uuid";
-import { GetUserReferralType } from "./dto/get-user-referrals-quesry.dto";
+import { GetUserReferralType } from "./dto/get-user-referrals-query.dto";
 import { AdminBotService } from "src/manager-bot/manager-bot.service";
 import { SendWithdrawalMessage } from "src/manager-bot/entities/withdrawal-message.entity";
+import { GetWalletHistoryQueryDto } from "./dto/get-wallet-history.dto";
+import { TransactionService } from "src/transaction/transaction.service";
 
 @Injectable()
 export class UserService {
@@ -47,10 +49,49 @@ export class UserService {
     private readonly transactionsRepository: Repository<Transaction>,
     private readonly socketService: SocketService,
     private readonly withdrawService: WithdrawHistoryService,
+    private readonly depositService: TransactionService,
     @Inject(forwardRef(() => NotificationService))
     private readonly notificationService: NotificationService,
     private readonly userReferralService: UserReferralService
   ) {}
+
+  async getWalletHistory(userId: string, query: GetWalletHistoryQueryDto) {
+    let startDate = new Date(0);
+    let endDate = new Date();
+    if (query.start_date) {
+      startDate = moment(query.start_date).startOf("day").toDate();
+    }
+
+    if (query.end_date) {
+      endDate = moment(query.end_date).endOf("day").toDate();
+    }
+
+    if (startDate > endDate)
+      throw new BadRequestException(
+        "start_date should be greater than end_date"
+      );
+
+    // console.log("start date: ", startDate);
+    // console.log("end date: ", endDate);
+
+    const [withdrawals, _withdrawalCount] =
+      await this.withdrawService.getAllWithdrawTransactions({
+        user: {
+          id: userId,
+        },
+        timestamp: Between(startDate.toISOString(), endDate.toISOString()),
+      });
+
+    const [transactions, _transactionCount] =
+      await this.depositService.getAllTransactions({
+        user: {
+          id: userId,
+        },
+        timestamp: Between(startDate.toISOString(), endDate.toISOString()),
+      });
+
+    return { withdrawals, transactions };
+  }
 
   async getFullBalance(userId: string) {
     let currentBalance = 0,

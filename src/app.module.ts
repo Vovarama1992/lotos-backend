@@ -2,7 +2,7 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
-  RequestMethod
+  RequestMethod,
 } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
@@ -92,7 +92,7 @@ import { WithdrawHistoryModule } from "./withdraw-history/withdraw-history.modul
     ReferralInviteModule,
     UserReferralModule,
     ManagerBotModule,
-    ConfigModule
+    ConfigModule,
     //MailModule
   ],
   controllers: [],
@@ -102,6 +102,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
+      .exclude({ path: "auth/sign", method: RequestMethod.POST })
       .forRoutes({ path: "*", method: RequestMethod.ALL });
   }
 }

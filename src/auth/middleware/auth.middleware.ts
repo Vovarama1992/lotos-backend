@@ -14,9 +14,9 @@ export class AuthMiddleware implements NestMiddleware {
     let user;
 
 
-    if (!bearerHeader || !accessToken) {
-      return next();
-    }
+    // if (!bearerHeader || !accessToken) {
+    //   return next();
+    // }
 
     try {
       const { userId: id, role }: AccessTokenPayload = verify(
