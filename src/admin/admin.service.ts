@@ -25,7 +25,10 @@ import {
 } from "src/transaction/entities/transaction.entity";
 import { TransactionService } from "src/transaction/transaction.service";
 import { UserService } from "src/user/user.service";
-import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
+import {
+  Withdraw,
+  WithdrawStatus,
+} from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
 import { Between, In, Not, Repository } from "typeorm";
 import { AddGameToCategoryDto } from "./dto/add-game-to-category.dto";
@@ -104,18 +107,21 @@ export class AdminService {
         user: { id: user.id },
         type: Not(TransactionType.CASHBACK),
         timestamp: Between(startDate.toISOString(), endDate.toISOString()),
+        status: TransactionStatus.SUCCESS,
       });
 
       const [cashbacks] = await this.transactionService.getAllTransactions({
         user: { id: user.id },
         type: TransactionType.CASHBACK,
         timestamp: Between(startDate.toISOString(), endDate.toISOString()),
+        status: TransactionStatus.SUCCESS,
       });
 
       const [withdrawals] =
         await this.withdrawService.getAllWithdrawTransactions({
           user: { id: user.id },
           timestamp: Between(startDate.toISOString(), endDate.toISOString()),
+          status: WithdrawStatus.SUCCESS,
         });
 
       const depositAmount = deposits.reduce(

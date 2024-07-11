@@ -50,8 +50,7 @@ export class AuthService {
       throw new ForbiddenException("Forbidden. Auth expired!");
     }
 
-    if (existingUser) {
-    } else {
+    if (!existingUser) {
       //create new user
 
       existingUser = await this.userService.saveUser({

@@ -62,6 +62,9 @@ export class AdminBotService {
     private readonly transactionService: TransactionService,
     private readonly withdrawalService: WithdrawHistoryService
   ) {
+  
+    if(process.env.ENV === 'dev') return;
+    
     const bot = new TelegramBot(process.env.TELEGRAM_ADMIN_BOT_TOKEN, {
       polling: true,
     });
@@ -76,8 +79,6 @@ export class AdminBotService {
 
     //bind this to function
     this.handleProcessCommand = this.handleProcessCommand.bind(this);
-
-    this.redisService.removeElementFromSet(AdminSetName, "mladoshin");
   }
 
   private async authenticateUser(msg: TelegramBot.Message) {
