@@ -26,7 +26,7 @@ import { TransactionService } from "src/transaction/transaction.service";
 import { UserService } from "src/user/user.service";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
-import { Repository } from "typeorm";
+import { Between, Repository } from "typeorm";
 import { AddGameToCategoryDto } from "./dto/add-game-to-category.dto";
 import { GetTransactionsQueryDto } from "./dto/get-transactions-query.dto";
 import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
@@ -42,6 +42,7 @@ import {
 } from "src/payment/entities/paymentDetails.entity";
 import { SaveAppConfigDto } from "./dto/save-app-config.dto";
 import { ConfigService } from "src/config/config.service";
+import { GetFinancialStatsQueryDto } from "./dto/get-financial-stats-query.dto";
 
 @Injectable()
 export class AdminService {
@@ -66,6 +67,69 @@ export class AdminService {
     private readonly paymentDetailsRepository: Repository<PaymentDetails>,
     private readonly configService: ConfigService
   ) {}
+
+  async getFinancialStats(query: GetFinancialStatsQueryDto) {
+    let startDate = new Date(0);
+    let endDate = new Date();
+    if (query.start_date) {
+      startDate = new Date(query.start_date);
+    }
+
+    if (query.end_date) {
+      endDate = new Date(query.end_date);
+    }
+
+    if (startDate > endDate) {
+      throw new BadRequestException(
+        "start_date should be greater than end_date"
+      );
+    }
+
+    let allUsers = [] as User[];
+    if (query.user_id) {
+      try {
+        allUsers = [await this.userService.findOneById(query.user_id)];
+      } catch (error) {
+        throw new NotFoundException("User not found!");
+      }
+    } else {
+      allUsers = await this.userService.findAll();
+    }
+
+    const result = [];
+    for (let i = 0; i < allUsers.length; i++) {
+      const user = allUsers[i];
+      const [deposits] = await this.transactionService.getAllTransactions({
+        user: { id: user.id },
+        timestamp: Between(startDate.toISOString(), endDate.toISOString()),
+      });
+
+      const [withdrawals] =
+        await this.withdrawService.getAllWithdrawTransactions({
+          user: { id: user.id },
+          timestamp: Between(startDate.toISOString(), endDate.toISOString()),
+        });
+
+      const depositAmount = deposits.reduce(
+        (current, value) => current + value.amount,
+        0
+      );
+
+      const withdrawAmount = withdrawals.reduce(
+        (current, value) => current + value.amount,
+        0
+      );
+
+      result.push({
+        user: user,
+        deposit_amount: depositAmount,
+        withdraw_amount: withdrawAmount,
+        profit: depositAmount - withdrawAmount,
+      });
+    }
+
+    return result;
+  }
 
   async saveAppConfig(saveAppConfigDto: SaveAppConfigDto) {
     return await this.configService.save(saveAppConfigDto);

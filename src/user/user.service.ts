@@ -24,7 +24,7 @@ import {
   WithdrawMethod,
 } from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
-import { Between, Repository } from "typeorm";
+import { Between, FindManyOptions, Repository } from "typeorm";
 import { SendMoneyDTO } from "./decorators/sendMoney.dto";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
 import { GetWithdrawsQueryDto } from "./dto/get-withdraws-query.dto";
@@ -243,8 +243,8 @@ export class UserService {
     }
   }
 
-  findAll() {
-    return this.usersRepository.find();
+  findAll(options?: FindManyOptions<User>) {
+    return this.usersRepository.find(options);
   }
 
   async getBalance(id: string) {
@@ -253,7 +253,7 @@ export class UserService {
     return user.balance;
   }
 
-  async findOneById(id: string): Promise<UserResponse> {
+  async findOneById(id: string): Promise<User> {
     return await this.usersRepository.findOneOrFail({
       where: { id },
     });

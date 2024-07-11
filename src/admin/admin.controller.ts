@@ -37,6 +37,7 @@ import { SaveGamesPlacementDto } from "./dto/save-games-placement.dto";
 import { BroadcastMessageDto } from "./dto/broadcast-message.dto";
 import { AddGamesToCategoryDto } from "./dto/add-games-to-category.dto";
 import { SaveAppConfigDto } from "./dto/save-app-config.dto";
+import { GetFinancialStatsQueryDto } from "./dto/get-financial-stats-query.dto";
 
 @ApiTags("admin")
 @UseGuards(RolesGuard)
@@ -254,5 +255,10 @@ export class AdminController {
   })
   getWithdrawHistory(@Query() query: GetWithdrawHistoryQueryDto) {
     return this.adminService.getAllWithdrawTransactions(query);
+  }
+
+  @Get("financial-stats")
+  getFinancialStats(@Query() query: GetFinancialStatsQueryDto){
+    return this.adminService.getFinancialStats(query);
   }
 }
