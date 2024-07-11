@@ -11,6 +11,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "src/user/entities/user.entity";
 import { PaymentDetails } from "src/payment/entities/paymentDetails.entity";
 import { ConfigService } from "src/config/config.service";
+import { FinancialStatsModule } from "src/financial-stats/financial-stats.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ConfigService } from "src/config/config.service";
     forwardRef(()=>WithdrawHistoryModule),
     forwardRef(()=>UsersModule),
     forwardRef(()=>NotificationModule),
+    forwardRef(()=>FinancialStatsModule),
   ],
   controllers: [AdminController],
   providers: [AdminService, RedisService, ConfigService],

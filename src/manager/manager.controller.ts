@@ -1,32 +1,34 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
   Query,
   Req,
+  UseGuards
 } from "@nestjs/common";
-import { ManagerService } from "./manager.service";
-import { CreateManagerDto } from "./dto/create-manager.dto";
-import { UpdateManagerDto } from "./dto/update-manager.dto";
+import { ApiOkResponse, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { BroadcastMessageDto } from "src/admin/dto/broadcast-message.dto";
+import { GetFinancialStatsQueryDto } from "src/admin/dto/get-financial-stats-query.dto";
+import { GetTransactionsQueryDto } from "src/admin/dto/get-transactions-query.dto";
+import { GetWithdrawHistoryQueryDto } from "src/admin/dto/get-withdraw-history-query.dto";
+import { Roles } from "src/auth/decorator/roles.decorator";
 import { RolesGuard } from "src/auth/guard/role.guard";
 import { UserRole } from "src/constants";
-import { Roles } from "src/auth/decorator/roles.decorator";
-import { ApiOkResponse, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { GetTransactionResponse } from "src/transaction/entities/transaction.entity";
-import { GetTransactionsQueryDto } from "src/admin/dto/get-transactions-query.dto";
 import { GetWithdrawHistoryResponse } from "src/withdraw-history/entities/withdraw-history.entity";
-import { GetWithdrawHistoryQueryDto } from "src/admin/dto/get-withdraw-history-query.dto";
-import { BroadcastMessageDto } from "src/admin/dto/broadcast-message.dto";
+import { ManagerService } from "./manager.service";
 
 @Controller("manager")
 @UseGuards(RolesGuard)
 export class ManagerController {
   constructor(private readonly managerService: ManagerService) {}
+
+  @Get("financial-stats")
+  @Roles([UserRole.MANAGER])
+  getFinancialStats(@Query() query: GetFinancialStatsQueryDto, @Req() req: any){
+    return this.managerService.getFinancialStats(req.user.id, query);
+  }
 
   @Get("transactions")
   @Roles([UserRole.MANAGER])

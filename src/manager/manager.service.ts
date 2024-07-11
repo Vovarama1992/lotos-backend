@@ -1,4 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateManagerDto } from "./dto/create-manager.dto";
 import { UpdateManagerDto } from "./dto/update-manager.dto";
 import { GetTransactionsQueryDto } from "src/admin/dto/get-transactions-query.dto";
@@ -14,6 +20,9 @@ import {
   NotificationStatus,
   NotificationType,
 } from "src/notification/entities/notification.entity";
+import { GetFinancialStatsQueryDto } from "src/admin/dto/get-financial-stats-query.dto";
+import { FinancialStatsService } from "src/financial-stats/financial-stats.service";
+import { UserService } from "src/user/user.service";
 
 @Injectable()
 export class ManagerService {
@@ -21,10 +30,44 @@ export class ManagerService {
     private readonly transactionService: TransactionService,
     private readonly withdrawService: WithdrawHistoryService,
     private readonly notificationService: NotificationService,
+    private readonly financialStatsService: FinancialStatsService,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
 
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>
   ) {}
+
+  async getFinancialStats(userId: string, query: GetFinancialStatsQueryDto) {
+    let startDate = new Date(0);
+    let endDate = new Date();
+    if (query.start_date) {
+      startDate = new Date(query.start_date);
+    }
+
+    if (query.end_date) {
+      endDate = new Date(query.end_date);
+    }
+
+    if (startDate > endDate) {
+      throw new BadRequestException(
+        "start_date should be greater than end_date"
+      );
+    }
+
+    let allUsers = [] as User[];
+    if (query.user_id) {
+      try {
+        allUsers = [await this.userService.findOneById(query.user_id)];
+      } catch (error) {
+        throw new NotFoundException("User not found!");
+      }
+    } else {
+      allUsers = await this.getAllReferrals(userId);
+    }
+
+    return this.financialStatsService.get(allUsers, startDate, endDate);
+  }
 
   async broadCastMessage(
     managerId: string,

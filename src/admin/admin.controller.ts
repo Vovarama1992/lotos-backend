@@ -258,6 +258,7 @@ export class AdminController {
   }
 
   @Get("financial-stats")
+  @Roles([UserRole.ADMIN])
   getFinancialStats(@Query() query: GetFinancialStatsQueryDto){
     return this.adminService.getFinancialStats(query);
   }

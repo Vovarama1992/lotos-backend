@@ -6,12 +6,16 @@ import { WithdrawHistoryModule } from "src/withdraw-history/withdraw-history.mod
 import { User } from "src/user/entities/user.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { NotificationModule } from "src/notification/notification.module";
+import { FinancialStatsModule } from "src/financial-stats/financial-stats.module";
+import { UsersModule } from "src/user/user.module";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     NotificationModule,
-    forwardRef(()=>TransactionModule),
+    forwardRef(() => TransactionModule),
+    forwardRef(() => FinancialStatsModule),
+    forwardRef(() => UsersModule),
     WithdrawHistoryModule,
   ],
   controllers: [ManagerController],
