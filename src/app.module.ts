@@ -104,8 +104,7 @@ export class AppModule implements NestModule {
       .apply(AuthMiddleware)
       .exclude(
         { path: "auth/sign", method: RequestMethod.POST },
-        { path: "games/", method: RequestMethod.GET },
-        { path: "games/providers", method: RequestMethod.GET }
+        { path: "games/(.*)", method: RequestMethod.GET }
       )
       .forRoutes({ path: "*", method: RequestMethod.ALL });
   }
