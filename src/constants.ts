@@ -17,6 +17,7 @@ export enum SocketEvent {
   PAYMENT_BANK_PENDING = "payment.bank.pending",
   PAYMENT_BANK_WAITING_CONFIRMATION = "payment.bank.waiting-confirmation",
   PAYMENT_BANK_SUCCESS = "payment.bank.success",
+  PAYMENT_BANK_CANCELLED = "payment.bank.cancelled",
   WITHDRAW_CANCELLED = "withdraw.cancelled",
   WITHDRAW_SUCCESS = "withdraw.success",
   WITHDRAW_PENDING = "withdraw.pending",

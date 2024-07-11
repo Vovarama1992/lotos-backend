@@ -41,6 +41,8 @@ import { TransactionModule } from "./transaction/transaction.module";
 import { UserReferral } from "./user-referral/entities/user-referral.entity";
 import { UserReferralModule } from "./user-referral/user-referral.module";
 import { WithdrawHistoryModule } from "./withdraw-history/withdraw-history.module";
+import { MailModule } from "./mail/mail.module";
+import { MailService } from "./mail/mail.service";
 
 @Module({
   imports: [
@@ -93,10 +95,10 @@ import { WithdrawHistoryModule } from "./withdraw-history/withdraw-history.modul
     UserReferralModule,
     ManagerBotModule,
     ConfigModule,
-    //MailModule
+    MailModule
   ],
   controllers: [],
-  providers: [RedisService, AppGateway, CryptocloudService, ConfigService],
+  providers: [RedisService, AppGateway, CryptocloudService, ConfigService, MailService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

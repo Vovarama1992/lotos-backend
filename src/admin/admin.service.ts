@@ -384,7 +384,7 @@ export class AdminService {
 
       await this.notificationService.createNotifications(
         [userId],
-        SocketEvent.PAYMENT_BANK_SUCCESS,
+        SocketEvent.PAYMENT_BANK_CANCELLED,
         {
           status: NotificationStatus.INFO,
           type: NotificationType.SYSTEM,

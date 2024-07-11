@@ -6,11 +6,13 @@ import { UsersModule } from "src/user/user.module";
 import { RedisService } from "src/redis/redis.service";
 import { ReferralInviteModule } from "src/referral-invite/referral-invite.module";
 import { UserReferralModule } from "src/user-referral/user-referral.module";
+import { MailModule } from "src/mail/mail.module";
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     forwardRef(() => ReferralInviteModule),
     forwardRef(() => UserReferralModule),
+    forwardRef(() => MailModule),
   ],
   providers: [AuthService, RedisService],
   controllers: [AuthController],

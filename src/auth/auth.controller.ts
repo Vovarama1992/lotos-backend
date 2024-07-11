@@ -1,33 +1,30 @@
 import {
+  BadRequestException,
+  Body,
   Controller,
+  ForbiddenException,
+  HttpStatus,
   Post,
   Req,
-  Body,
-  ForbiddenException,
-  UseInterceptors,
-  BadRequestException,
   Res,
-  HttpStatus,
-  Query,
-  Get,
+  UseInterceptors
 } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { LoginResponse } from "./type/loginResponse";
+import { ApiOperation } from "@nestjs/swagger";
 import * as bcrypt from "bcryptjs";
-import { User } from "src/user/entities/user.entity";
-import { LoginUserDto } from "./dto/loginUser.dto";
-import { UserService } from "../user/user.service";
-import { CookieInterceptor } from "./interceptor/cookie.interceptor";
-import { CheckUserRegister, RegisterUserDto } from "./dto/registerUser.dto";
-import { CodeCheckDto } from "./dto/codeCheck.dto";
 import { MailService } from "src/mail/mail.service";
 import { RedisService } from "src/redis/redis.service";
-import { v4 as uuidv4 } from "uuid";
 import { ReferralInviteService } from "src/referral-invite/referral-invite.service";
-import { error } from "console";
 import { UserReferralService } from "src/user-referral/user-referral.service";
+import { User } from "src/user/entities/user.entity";
+import { v4 as uuidv4 } from "uuid";
+import { UserService } from "../user/user.service";
+import { AuthService } from "./auth.service";
+import { CodeCheckDto } from "./dto/codeCheck.dto";
 import { GetTelegramAuthDto } from "./dto/get-telegram-auth.dto";
-import { ApiOperation } from "@nestjs/swagger";
+import { LoginUserDto } from "./dto/loginUser.dto";
+import { CheckUserRegister, RegisterUserDto } from "./dto/registerUser.dto";
+import { CookieInterceptor } from "./interceptor/cookie.interceptor";
+import { LoginResponse } from "./type/loginResponse";
 
 @UseInterceptors(CookieInterceptor)
 @Controller("/auth")
@@ -35,7 +32,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    // private readonly mailService: MailService,
+    private readonly mailService: MailService,
     private readonly redisService: RedisService,
     private readonly referralInviteService: ReferralInviteService,
     private readonly userReferralService: UserReferralService
@@ -146,7 +143,7 @@ export class AuthController {
   async sendCode(@Body() data, @Res() response) {
     const code = uuidv4();
     this.redisService.setCode(code, data.email);
-    //await this.mailService.codeSend(data.email, "http://lotos.na4u.ru/?restoreCode=" + code.toString())
+    await this.mailService.codeSend(data.email, "http://lotos.na4u.ru/?restoreCode=" + code.toString())
     return response.status(HttpStatus.OK).json({
       status: "success",
       message: "Ссылка на восстановление успешно отправлена",

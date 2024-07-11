@@ -8,16 +8,16 @@ import { join } from 'path';
   imports: [
     MailerModule.forRoot({
       transport: {
-        host: 'smtp.gmail.com',
-        port: 587,
+        host: 'mail.lotos-casino.com',
+        port: 465,
         secure: false,
         auth: {
-          user: 'sumbembaev.b@gmail.com',
-          pass: 'hknx xbyr xhwd fnbb',
+          user: 'info@lotos-casino.com',
+          pass: 'bSjFVkbfSxJk',
         },
       },
       defaults: {
-        from: '"No Reply" <noreply@example.com>',
+        from: '"No Reply" <noreply@lotos-casino.com>',
       },
       template: {
         dir: join(__dirname, 'templates'),
