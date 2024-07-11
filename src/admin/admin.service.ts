@@ -21,12 +21,13 @@ import { RedisService } from "src/redis/redis.service";
 import {
   Transaction,
   TransactionStatus,
+  TransactionType,
 } from "src/transaction/entities/transaction.entity";
 import { TransactionService } from "src/transaction/transaction.service";
 import { UserService } from "src/user/user.service";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
-import { Between, Repository } from "typeorm";
+import { Between, In, Not, Repository } from "typeorm";
 import { AddGameToCategoryDto } from "./dto/add-game-to-category.dto";
 import { GetTransactionsQueryDto } from "./dto/get-transactions-query.dto";
 import { GetWithdrawHistoryQueryDto } from "./dto/get-withdraw-history-query.dto";
@@ -101,6 +102,13 @@ export class AdminService {
       const user = allUsers[i];
       const [deposits] = await this.transactionService.getAllTransactions({
         user: { id: user.id },
+        type: Not(TransactionType.CASHBACK),
+        timestamp: Between(startDate.toISOString(), endDate.toISOString()),
+      });
+
+      const [cashbacks] = await this.transactionService.getAllTransactions({
+        user: { id: user.id },
+        type: TransactionType.CASHBACK,
         timestamp: Between(startDate.toISOString(), endDate.toISOString()),
       });
 
@@ -120,8 +128,14 @@ export class AdminService {
         0
       );
 
+      const cashbackAmount = cashbacks.reduce(
+        (current, value) => current + value.amount,
+        0
+      );
+
       result.push({
         user: user,
+        cachback_amount: cashbackAmount,
         deposit_amount: depositAmount,
         withdraw_amount: withdrawAmount,
         profit: depositAmount - withdrawAmount,
