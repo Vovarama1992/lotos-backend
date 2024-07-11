@@ -205,6 +205,27 @@ export class AdminController {
     );
   }
 
+  @Post("cancel-transaction")
+  @Roles([UserRole.ADMIN])
+  @ApiOperation({
+    summary: "Админ - отклонить банковский перевод (пополнение)",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Пользователь не авторизован, либо нет прав доступа",
+  })
+  @ApiOkResponse({
+    description: "Транзакция",
+    type: Transaction,
+  })
+  cancelBankTransactionAsAdmin(
+    @Body() confirmBankTransactionDto: ConfirmBankTransactionDto
+  ) {
+    return this.adminService.cancelBankTransaction(
+      confirmBankTransactionDto.transaction_id
+    );
+  }
+
   @Post("confirm-withdraw")
   @Roles([UserRole.ADMIN])
   @ApiOperation({
