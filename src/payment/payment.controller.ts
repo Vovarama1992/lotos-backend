@@ -171,7 +171,7 @@ export class PaymentController {
         adminUserIds,
         SocketEvent.PAYMENT_CRYPTO_SUCCESS,
         {
-          message: `Пользователь ${user.email} успешно пополнил счёт через криптоэквайринг`,
+          message: `Пользователь ${user.email || user.telegram_username || user.phone} успешно пополнил счёт через криптоэквайринг`,
           status: NotificationStatus.INFO,
           type: NotificationType.SYSTEM,
           data: {

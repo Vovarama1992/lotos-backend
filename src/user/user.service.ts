@@ -175,7 +175,7 @@ export class UserService {
       adminIds,
       SocketEvent.PAYMENT_CASHBACK_WAITING_CONFIRMATION,
       {
-        message: `Пользователь ${user.email} ожидает подтверждения начисления кэшбэка по реферальной программе в размере ${cashback} РУБ`,
+        message: `Пользователь ${user.email || user.telegram_username || user.phone} ожидает подтверждения начисления кэшбэка по реферальной программе в размере ${cashback} РУБ`,
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
         data: {
@@ -407,7 +407,7 @@ export class UserService {
       adminUserIds,
       "withdraw.pending",
       {
-        message: `Новая заявка на вывод средств от ${user.email}`,
+        message: `Новая заявка на вывод средств от ${user.email || user.telegram_username || user.phone}`,
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
       }
@@ -467,7 +467,7 @@ export class UserService {
         adminUserIds,
         "withdraw.cancelled",
         {
-          message: `Заявка на вывод средств от ${user.email} была отменена`,
+          message: `Заявка на вывод средств от ${user.email || user.telegram_username || user.phone} была отменена`,
           status: NotificationStatus.INFO,
           type: NotificationType.SYSTEM,
         }
