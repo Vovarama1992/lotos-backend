@@ -148,7 +148,7 @@ export class UserService {
   }
 
   async depositCashbackForUser(userId: string, adminIds: string[]) {
-    const cashback =
+    const { totalCashback: cashback } =
       await this.userReferralService.calculateUserReferralCashback(userId);
 
     if (!cashback) {

@@ -80,9 +80,14 @@ export class UserReferralService {
   }
 
   async calculateUserReferralCashback(userId: string) {
-    if(!userId) throw new InternalServerErrorException("calculateUserReferralCashback: userId can't be empty!")
+    if (!userId)
+      throw new InternalServerErrorException(
+        "calculateUserReferralCashback: userId can't be empty!"
+      );
 
     let totalCashback = 0;
+    const usersWithLevel = [];
+
     // уровни кэшбэков - 10%, 5%, 3%
     const cashbackRate = [0.1, 0.05, 0.03];
     const user = await this.userRepository.findOneByOrFail({ id: userId });
@@ -97,12 +102,6 @@ export class UserReferralService {
       const usersInLevel = await this.userReferralRepository.find({
         where: { user: { id: userId }, level: level + 1 },
         relations: { referral: true },
-        select: {
-          referral: {
-            totalLoss: true,
-            lastTotalLoss: true,
-          },
-        },
       });
 
       // сортируем рефералов от наивысшего проигрыша до наименьшего проигрыша за последнюю неделю
@@ -117,21 +116,26 @@ export class UserReferralService {
 
       // учитывать проигрыш самого пользователя на верхнем уровне кэшбека
       if (isFirstLevel) {
-        totalCashbackInLevel += userLoss * currentCashbackRate;
+        const selfCashback = userLoss * currentCashbackRate;
+        totalCashbackInLevel += selfCashback;
         endIndex = 4;
+
+        usersWithLevel.push({ ...user, level: 1, cashback: selfCashback });
       }
 
       // суммируем кэшбэк топ 5 пользователей по проигрышу на каждом уровне кэшбэков
       usersInLevel.slice(0, endIndex).forEach((el) => {
         const referralLoss = el.referral.totalLoss - el.referral.lastTotalLoss;
-        totalCashbackInLevel += currentCashbackRate * referralLoss;
+        const referralCashback = currentCashbackRate * referralLoss
+        totalCashbackInLevel += referralCashback;
+        usersWithLevel.push({ ...el.referral, level: level + 1, cashback: referralCashback });
       });
 
       // суммируем общий кэшбэк
       totalCashback += totalCashbackInLevel;
     }
 
-    return totalCashback;
+    return {totalCashback, usersWithLevel};
   }
 
   private sortUsersByLoss(
@@ -149,37 +153,18 @@ export class UserReferralService {
   }
 
   async getReferralsWithStats(userId: string, type: GetUserReferralType) {
-    let users = [] as User[];
-
-    for (let i = 0; i < 3; i++) {
-      const level = await this.userReferralRepository.find({
-        where: { user: { id: userId }, level: i + 1 },
-        relations: {
-          user: true,
-        },
-      });
-      const userInLevel = level.map((el) => ({ ...el.user, level: el.level }));
-      //sort users
-      this.sortUsersByLoss(userInLevel, type, "desc");
-      // limit users to top 5
-      userInLevel.splice(5);
-
-      users = [...users, ...userInLevel];
-    }
+    const {totalCashback, usersWithLevel} = await this.calculateUserReferralCashback(userId);
 
     const stats = {
-      userQuantity: users.length,
-      lostAmount: users.reduce(
-        (result, user) => (result += this.getUserLoss(user, type)),
+      userQuantity: usersWithLevel.length,
+      lostAmount: usersWithLevel.reduce(
+        (result, user: User) => (result += (user.totalLoss-user.lastTotalLoss) - (user.totalEarned-user.lastTotalEarned)),
         0
       ),
-      wonAmount: users.reduce(
-        (result, user) => (result += this.getUserEarned(user, type)),
-        0
-      ),
+      wonAmount: totalCashback
     };
 
-    return { stats, users };
+    return { stats, users: usersWithLevel };
   }
 
   async getReferrals(userId: string, type: GetUserReferralType) {
