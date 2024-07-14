@@ -1,5 +1,9 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { TransactionStatus, TransactionType } from "src/transaction/entities/transaction.entity";
+import { profile } from "console";
+import {
+  TransactionStatus,
+  TransactionType,
+} from "src/transaction/entities/transaction.entity";
 import { TransactionService } from "src/transaction/transaction.service";
 import { User } from "src/user/entities/user.entity";
 import { WithdrawStatus } from "src/withdraw-history/entities/withdraw-history.entity";
@@ -12,11 +16,15 @@ export class FinancialStatsService {
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => WithdrawHistoryService))
-    private readonly withdrawService: WithdrawHistoryService,
+    private readonly withdrawService: WithdrawHistoryService
   ) {}
 
   async get(users: User[], startDate: Date, endDate: Date) {
     const result = [];
+    let totalDeposit = 0;
+    let totalWithrawal = 0;
+    let totalProfit = 0;
+    let totalCashback = 0;
     for (let i = 0; i < users.length; i++) {
       const user = users[i];
       const [deposits] = await this.transactionService.getAllTransactions({
@@ -55,6 +63,11 @@ export class FinancialStatsService {
         0
       );
 
+      totalDeposit += depositAmount;
+      totalWithrawal += withdrawAmount;
+      totalProfit += depositAmount - withdrawAmount;
+      totalCashback += cashbackAmount;
+
       result.push({
         user: user,
         cashback_amount: cashbackAmount,
@@ -64,6 +77,9 @@ export class FinancialStatsService {
       });
     }
 
-    return result;
+    return {
+      result,
+      total: { totalDeposit, totalWithrawal, totalProfit, totalCashback },
+    };
   }
 }
