@@ -24,9 +24,9 @@ export class ReferralInviteService {
         relations: { manager: true },
       });
 
-    if (new Date() >= new Date(referralInvitation.expire_date)) {
-      throw new ForbiddenException("Срок действия реферальной ссылки истёк!");
-    }
+    // if (new Date() >= new Date(referralInvitation.expire_date)) {
+    //   throw new ForbiddenException("Срок действия реферальной ссылки истёк!");
+    // }
 
     referralInvitation.is_used = true;
 
