@@ -3,7 +3,9 @@ import { WithdrawMethod } from "src/withdraw-history/entities/withdraw-history.e
 
 export class SendWithdrawalMessage {
   withdrawal_id: string;
-  user_email: string;
+  user_email: string | null;
+  user_tg: string | null;
+  user_tel: string | null;
   method: WithdrawMethod;
   amount: number;
   timestamp: Date | string;

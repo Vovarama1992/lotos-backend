@@ -62,9 +62,8 @@ export class AdminBotService {
     private readonly transactionService: TransactionService,
     private readonly withdrawalService: WithdrawHistoryService
   ) {
-  
-    if(process.env.ENV === 'dev') return;
-    
+    if (process.env.ENV === "dev") return;
+
     const bot = new TelegramBot(process.env.TELEGRAM_ADMIN_BOT_TOKEN, {
       polling: true,
     });
@@ -223,6 +222,20 @@ export class AdminBotService {
     return chats[username];
   }
 
+  private getUserRowForMessage(
+    data: SendIncomingMessage | SendWithdrawalMessage
+  ) {
+    let userRow = `<b>Email:</b>   ${data.user_email}`;
+    if (!data.user_email) {
+      if (data.user_tg) {
+        userRow = `<b>Telegram:</b>   ${data.user_tg}`;
+      } else if (data.user_tel) {
+        userRow = `<b>Phone:</b>   ${data.user_tel}`;
+      }
+    }
+    return userRow;
+  }
+
   private sendIncomingNotification(chatId: number, data: SendIncomingMessage) {
     const jsonDataAccept = JSON.stringify({
       type: CallbackType.ACCEPT_INCOMING,
@@ -233,11 +246,13 @@ export class AdminBotService {
       id: data.transaction_id,
     });
 
+    const userRow = this.getUserRowForMessage(data);
+
     this.bot.sendMessage(
       chatId,
       `<b>Новое пополнение средств</b>
 
-<b>Email:</b>   ${data.user_email}
+${userRow}
 <b>Метод:</b>   ${data.type}
 <b>Реквизиты получателя: </b>
 ${data.recipient_payment_info}
@@ -276,11 +291,13 @@ ${data.recipient_payment_info}
       .filter((val) => !!val)
       .join(", ");
 
+    const userRow = this.getUserRowForMessage(data);
+
     this.bot.sendMessage(
       chatId,
       `<b>Новый вывод средств</b>
 
-<b>Email:</b>   ${data.user_email}
+${userRow}
 <b>Метод:</b>   ${data.method}
 <b>Реквизиты: </b>   ${formattedPaymentDetails}
 <b>Сумма:</b>   ${data.amount} ${data.currency}
