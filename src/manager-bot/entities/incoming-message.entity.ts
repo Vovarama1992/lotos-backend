@@ -1,3 +1,4 @@
+import { PaymentDetails } from "src/payment/entities/paymentDetails.entity";
 import { TransactionType } from "src/transaction/entities/transaction.entity";
 
 export class SendIncomingMessage {
@@ -9,6 +10,7 @@ export class SendIncomingMessage {
   amount: number;
   timestamp: Date | string;
   recipient_payment_info: string;
+  payment_details: PaymentDetails
 
   constructor(transaction: Partial<SendIncomingMessage>) {
     Object.assign(this, transaction);

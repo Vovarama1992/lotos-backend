@@ -1,4 +1,5 @@
 import { PaymentDetailsDto } from "src/payment/entities/bankInvoice.entity";
+import { PaymentDetails } from "src/payment/entities/paymentDetails.entity";
 import { WithdrawMethod } from "src/withdraw-history/entities/withdraw-history.entity";
 
 export class SendWithdrawalMessage {

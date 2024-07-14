@@ -4,6 +4,7 @@ import { RedisService } from "src/redis/redis.service";
 import {
   Transaction,
   TransactionStatus,
+  TransactionType,
 } from "src/transaction/entities/transaction.entity";
 import { SendIncomingMessage } from "./entities/incoming-message.entity";
 import * as moment from "moment";
@@ -253,9 +254,10 @@ export class AdminBotService {
       `<b>Новое пополнение средств</b>
 
 ${userRow}
-<b>Метод:</b>   ${data.type}
+<b>Метод:</b>   ${data.payment_details?.type ? TransactionType.SBP : TransactionType.CARD}
+<b>Банк:</b>   ${data.payment_details?.bank}
 <b>Реквизиты получателя: </b>
-${data.recipient_payment_info}
+${data.payment_details?.data}
 <b>Сумма:</b>   ${data.amount} RUB
 <b>Дата:</b>   ${moment(data.timestamp).format("DD.MM.YYYY, hh:mm:ss")}
 

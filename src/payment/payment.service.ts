@@ -335,7 +335,7 @@ export class PaymentService {
         type: transaction.type,
         amount: transaction.amount,
         timestamp: transaction.timestamp,
-        recipient_payment_info: transaction.payment_details.data,
+        payment_details: transaction.payment_details,
       })
     );
 
