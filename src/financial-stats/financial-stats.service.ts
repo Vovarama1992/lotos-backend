@@ -57,7 +57,7 @@ export class FinancialStatsService {
 
       result.push({
         user: user,
-        cachback_amount: cashbackAmount,
+        cashback_amount: cashbackAmount,
         deposit_amount: depositAmount,
         withdraw_amount: withdrawAmount,
         profit: depositAmount - withdrawAmount,
