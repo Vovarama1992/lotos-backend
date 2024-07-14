@@ -109,6 +109,7 @@ export class AppModule implements NestModule {
         { path: "auth/check", method: RequestMethod.POST },
         { path: "auth/sendCode", method: RequestMethod.POST },
         { path: "auth/sign", method: RequestMethod.POST },
+        { path: "auth/telegram", method: RequestMethod.POST },
         { path: "games/(.*)", method: RequestMethod.GET }
       )
       .forRoutes({ path: "*", method: RequestMethod.ALL });
