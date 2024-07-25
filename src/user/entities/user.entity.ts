@@ -82,11 +82,11 @@ export class User {
   earned: number;
 
   @ApiProperty({ example: 50 })
-  @Column({ default: 0 })
+  @Column({ default: 0, type: "double precision" })
   totalEarned: number;
 
   @ApiProperty({ example: 50 })
-  @Column({ default: 0 })
+  @Column({ default: 0, type: "double precision" })
   lastTotalEarned: number;
 
   @ApiProperty({ example: 50 })
