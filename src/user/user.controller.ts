@@ -157,14 +157,15 @@ export class UserController {
         };
       }
       const profit = +data.win - +data.bet;
+
       const newBalance = balance + profit;
       this.gameHistory.changeIsStart(data.sessionId);
       this.userService.changeBalance(data.login, newBalance);
 
       if (profit < 0) {
-        this.userService.increaseTotalLoss(data.login, Math.abs(profit));
+        await this.userService.increaseTotalLoss(data.login, +Math.abs(profit).toFixed(2));
       } else {
-        this.userService.increaseTotalEarned(data.login, Math.abs(profit));
+        await this.userService.increaseTotalEarned(data.login, +Math.abs(profit).toFixed(2));
       }
 
       return {
