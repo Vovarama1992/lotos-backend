@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsNumber, IsOptional } from "class-validator";
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { DepositMode } from "src/config/entities/config.entity";
 
 export class SaveAppConfigDto {
@@ -13,4 +13,9 @@ export class SaveAppConfigDto {
     @IsOptional()
     @IsBoolean()
     deleteExpiredDepositSessions?: boolean;
+
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    currentDomain?: string;
 }

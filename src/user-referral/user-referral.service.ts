@@ -4,6 +4,7 @@ import { GetUserReferralType } from "src/user/dto/get-user-referrals-query.dto";
 import { User } from "src/user/entities/user.entity";
 import { Repository } from "typeorm";
 import { UserReferral } from "./entities/user-referral.entity";
+import { ConfigService } from "src/config/config.service";
 
 @Injectable()
 export class UserReferralService {
@@ -11,28 +12,9 @@ export class UserReferralService {
     @InjectRepository(UserReferral)
     private readonly userReferralRepository: Repository<UserReferral>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    private readonly configService: ConfigService
   ) {}
-
-  private getUserLoss(user: User, type: GetUserReferralType) {
-    let result = user.totalLoss;
-
-    if (type === GetUserReferralType.WEEK) {
-      result = user.totalLoss - user.lastTotalLoss;
-    }
-
-    return result;
-  }
-
-  private getUserEarned(user: User, type: GetUserReferralType) {
-    let result = user.totalEarned;
-
-    if (type === GetUserReferralType.WEEK) {
-      result = user.totalEarned - user.lastTotalEarned;
-    }
-
-    return result;
-  }
 
   async addReferral(userId: string, referralId: string) {
     const referralUser = (await this.userRepository.findOneByOrFail({
@@ -150,6 +132,9 @@ export class UserReferralService {
   }
 
   async getReferralsWithStats(userId: string, type: GetUserReferralType) {
+    const {currentDomain = process.env.FRONTEND_URL} = await this.configService.get();
+    const referralLink = `${currentDomain}?user_referral_id=${userId}`;
+    
     const { totalCashback, usersWithLevel } =
       await this.calculateUserReferralCashback(userId);
 
@@ -168,7 +153,7 @@ export class UserReferralService {
       wonAmount: totalCashback,
     };
 
-    return { stats, users: usersWithLevel };
+    return { stats, users: usersWithLevel, link: referralLink };
   }
 
   async getReferrals(userId: string, type: GetUserReferralType) {

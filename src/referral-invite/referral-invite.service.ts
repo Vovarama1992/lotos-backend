@@ -5,6 +5,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/user/entities/user.entity";
 import { Repository } from "typeorm";
 import { ReferralInvite } from "./entities/referral-invite.entity";
+import { ConfigService } from "src/config/config.service";
 
 @Injectable()
 export class ReferralInviteService {
@@ -12,7 +13,8 @@ export class ReferralInviteService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     @InjectRepository(ReferralInvite)
-    private readonly referralInviteRepository: Repository<ReferralInvite>
+    private readonly referralInviteRepository: Repository<ReferralInvite>,
+    private readonly configService: ConfigService
   ) {}
 
   async acceptReferralInvitation(referralInviteId: string) {
@@ -49,13 +51,14 @@ export class ReferralInviteService {
   }
 
   async findAll(managerId: string) {
+    const {currentDomain = process.env.FRONTEND_URL} = await this.configService.get();
     const [data, _count] = await this.referralInviteRepository.findAndCount({
       where: { manager: { id: managerId } },
       order: { created_at: "DESC" },
     });
 
     data.forEach((invitation) => {
-      invitation.link = `${process.env.FRONTEND_URL}?referral_invitation_id=${invitation.id}`;
+      invitation.link = `${currentDomain}?referral_invitation_id=${invitation.id}`;
     });
 
     return data;
