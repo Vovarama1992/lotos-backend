@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   Patch,
   Post,
@@ -47,6 +48,7 @@ import { GetWalletHistoryResponseDto } from "./dto/get-wallet-history-response.d
 @ApiBearerAuth("JWT")
 @Controller("user")
 export class UserController {
+  private readonly logger = new Logger("UserController");
   constructor(
     private readonly userService: UserService,
     private readonly gameHistory: GameHistoryService,
@@ -150,6 +152,10 @@ export class UserController {
     }
 
     if (cmd === "writeBet") {
+
+      this.logger.log("WRITE_BET");
+      this.logger.log(data);
+
       if (balance < data.bet) {
         return {
           status: "fail",
@@ -157,6 +163,7 @@ export class UserController {
         };
       }
       const profit = +data.win - +data.bet;
+      this.logger.log(`profit = ${profit}`);
 
       const newBalance = balance + profit;
       this.gameHistory.changeIsStart(data.sessionId);
