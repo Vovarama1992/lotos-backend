@@ -132,7 +132,8 @@ export class UserReferralService {
       // суммируем кэшбэк топ 5 пользователей по проигрышу на каждом уровне кэшбэков
       usersInLevel.slice(0, endIndex).forEach((el) => {
         const referralLoss = this.getReferralLoss(el.referral);
-        const referralCashback = referralLoss >= 0 ? currentCashbackRate * referralLoss : 0;
+        const referralCashback =
+          referralLoss >= 0 ? currentCashbackRate * referralLoss : 0;
         totalCashbackInLevel += referralCashback;
         usersWithLevel.push({
           ...el.referral,
@@ -148,34 +149,22 @@ export class UserReferralService {
     return { totalCashback: +totalCashback.toFixed(2), usersWithLevel };
   }
 
-  private sortUsersByLoss(
-    users: User[],
-    type: GetUserReferralType,
-    order?: "asc" | "desc"
-  ) {
-    const orderFlag = order === "asc" ? 1 : -1;
-
-    users.sort((user1, user2) => {
-      if (this.getUserLoss(user1, type) > this.getUserLoss(user2, type))
-        return orderFlag;
-      return -orderFlag;
-    });
-  }
-
   async getReferralsWithStats(userId: string, type: GetUserReferralType) {
     const { totalCashback, usersWithLevel } =
       await this.calculateUserReferralCashback(userId);
 
+    const lostAmount: number = usersWithLevel.reduce(
+      (result, user: User) =>
+        (result +=
+          user.totalLoss -
+          user.lastTotalLoss -
+          (user.totalEarned - user.lastTotalEarned)),
+      0
+    );
+
     const stats = {
       userQuantity: usersWithLevel.length,
-      lostAmount: usersWithLevel.reduce(
-        (result, user: User) =>
-          (result +=
-            user.totalLoss -
-            user.lastTotalLoss -
-            (user.totalEarned - user.lastTotalEarned)),
-        0
-      ),
+      lostAmount: +lostAmount.toFixed(2),
       wonAmount: totalCashback,
     };
 
