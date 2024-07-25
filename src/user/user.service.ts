@@ -378,11 +378,7 @@ export class UserService {
 
   async increaseTotalEarned(id: string, value: number) {
     const user = await this.findOneById(id);
-    console.log("totalEarned = ", user.totalEarned)
-    console.log("value = ", value)
-    user.totalEarned += value;
-    console.log(user)
-    
+    user.totalEarned += value;    
     this.saveUser(user);
     return user;
   }
