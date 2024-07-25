@@ -137,7 +137,7 @@ export class UserReferralService {
         usersWithLevel.push({
           ...el.referral,
           level: level + 1,
-          cashback: referralCashback,
+          cashback: +referralCashback.toFixed(2),
         });
       });
 
@@ -145,7 +145,7 @@ export class UserReferralService {
       totalCashback += totalCashbackInLevel;
     }
 
-    return { totalCashback, usersWithLevel };
+    return { totalCashback: +totalCashback.toFixed(2), usersWithLevel };
   }
 
   private sortUsersByLoss(
