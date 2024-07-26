@@ -9,14 +9,14 @@ import { readFileSync } from "fs";
 
 async function bootstrap() {
   let httpsOptions = {};
-  if (process.env.ENV !== "dev") {
-    httpsOptions = {
-      httpsOptions: {
-        key: readFileSync(process.env.SSL_KEY_PATH),
-        cert: readFileSync(process.env.SSL_CERT_PATH),
-      },
-    };
-  }
+  // if (process.env.ENV !== "dev") {
+  //   httpsOptions = {
+  //     httpsOptions: {
+  //       key: readFileSync(process.env.SSL_KEY_PATH),
+  //       cert: readFileSync(process.env.SSL_CERT_PATH),
+  //     },
+  //   };
+  // }
 
   const app = await NestFactory.create(AppModule, {
     logger: new Logger(),
