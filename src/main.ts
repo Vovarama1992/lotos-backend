@@ -28,6 +28,11 @@ async function bootstrap() {
         "https://lotos.na4u.ru",
         "http://adarfawerf.ru",
         "https://adarfawerf.ru",
+        "https://lotos-casino.pro",
+        "https://lotos-casino.com",
+        "https://lotos-casino.net",
+        "https://lotos-casino.site",
+        "https://lotoscasino.site",
         process.env.FRONTEND_URL
       ],
       methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
