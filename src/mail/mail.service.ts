@@ -10,13 +10,15 @@ export class MailService {
 
   async mailConfirm(mail: string) {
     try {
-      console.log('send e,eail to', mail)
+      console.log('send email to', mail)
       await this.mailerService.sendMail({
         to: mail,
         subject: 'Welcome to Lotos! Confirm your Email',
         template: './activate'
       });
-    } catch {}
+    } catch (error){
+      console.log(error)
+    }
   }
 
   async codeSend(email: string, code: string) {

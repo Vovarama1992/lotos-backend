@@ -7,9 +7,9 @@ import {
   Post,
   Req,
   Res,
-  UseInterceptors
+  UseInterceptors,
 } from "@nestjs/common";
-import { ApiOperation } from "@nestjs/swagger";
+import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import * as bcrypt from "bcryptjs";
 import { MailService } from "src/mail/mail.service";
 import { RedisService } from "src/redis/redis.service";
@@ -25,7 +25,10 @@ import { LoginUserDto } from "./dto/loginUser.dto";
 import { CheckUserRegister, RegisterUserDto } from "./dto/registerUser.dto";
 import { CookieInterceptor } from "./interceptor/cookie.interceptor";
 import { LoginResponse } from "./type/loginResponse";
+import { SendCodeDto } from "./dto/send-code.dto";
+import { RestorePasswordDto } from "./dto/restore-password.dto";
 
+@ApiTags("auth")
 @UseInterceptors(CookieInterceptor)
 @Controller("/auth")
 export class AuthController {
@@ -98,7 +101,7 @@ export class AuthController {
           email: email.toLowerCase(),
           password: hashedPassword,
         });
-        //this.mailService.mailConfirm(email)
+        this.mailService.mailConfirm(email);
 
         //add referral records to user-referral table
         if (loginUserDto.user_referral_id) {
@@ -135,15 +138,17 @@ export class AuthController {
     }
   }
 
-  private isEmail(login: string): boolean {
-    return /\S+@\S+\.\S+/.test(login);
-  }
-
-  @Post("/sendCode")
-  async sendCode(@Body() data, @Res() response) {
+  @Post("/send-code")
+  @ApiOperation({
+    summary: "Пользователь - отправить ссылку на восстановление пароля",
+  })
+  async sendCode(@Body() sendCodeDto: SendCodeDto, @Res() response) {
     const code = uuidv4();
-    this.redisService.setCode(code, data.email);
-    await this.mailService.codeSend(data.email, "http://lotos.na4u.ru/?restoreCode=" + code.toString())
+    this.redisService.setCode(code, sendCodeDto.email);
+    await this.mailService.codeSend(
+      sendCodeDto.email,
+      `http://lotos.na4u.ru/?restoreCode=${code.toString()}`
+    );
     return response.status(HttpStatus.OK).json({
       status: "success",
       message: "Ссылка на восстановление успешно отправлена",
@@ -151,17 +156,18 @@ export class AuthController {
   }
 
   @Post("/restore")
-  async restore(@Body() data: any, @Res() response) {
+  @ApiOperation({ summary: "Пользователь - сменить пароль" })
+  async restore(@Body() data: RestorePasswordDto, @Res() response: any) {
     const email = await this.redisService.get(data.code);
     if (email !== null) {
       let existingUser = await this.userService.findOneByEmail(email);
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(data.password, saltRounds);
-      existingUser = await this.userService.saveUser({
-        password: hashedPassword,
-      });
+      existingUser.password = hashedPassword;
+      existingUser = await this.userService.saveUser(existingUser);
       const { id, role } = existingUser;
       const tokens = this.authService.assignTokens(id, role);
+      this.redisService.del(data.code)
       return response.status(HttpStatus.OK).json({
         status: "success",
         accessToken: tokens.accessToken,

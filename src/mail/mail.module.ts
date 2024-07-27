@@ -1,26 +1,28 @@
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { Module } from '@nestjs/common';
-import { MailService } from './mail.service';
-import { join } from 'path';
+import { MailerModule } from "@nestjs-modules/mailer";
+import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
+import { Module } from "@nestjs/common";
+import { MailService } from "./mail.service";
+import { join } from "path";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MailerModule.forRoot({
       transport: {
-        host: 'mail.lotos-casino.com',
+        host: process.env.MAIL_HOST,
         port: 465,
-        secure: false,
+        secure: true,
         auth: {
-          user: 'info@lotos-casino.com',
-          pass: 'bSjFVkbfSxJk',
+          user: process.env.MAIL_USER,
+          pass: process.env.MAIL_PASSWORD,
         },
       },
       defaults: {
         from: '"No Reply" <noreply@lotos-casino.com>',
       },
       template: {
-        dir: join(__dirname, 'templates'),
+        dir: join(__dirname, "templates"),
         adapter: new HandlebarsAdapter(),
         options: {
           strict: true,
