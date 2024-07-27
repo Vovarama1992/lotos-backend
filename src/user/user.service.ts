@@ -39,6 +39,8 @@ import { AdminBotService } from "src/manager-bot/manager-bot.service";
 import { SendWithdrawalMessage } from "src/manager-bot/entities/withdrawal-message.entity";
 import { GetWalletHistoryQueryDto } from "./dto/get-wallet-history.dto";
 import { TransactionService } from "src/transaction/transaction.service";
+import { ChangePasswordDto } from "./dto/change-password.dto";
+import * as bcrypt from "bcryptjs";
 
 @Injectable()
 export class UserService {
@@ -54,6 +56,17 @@ export class UserService {
     private readonly notificationService: NotificationService,
     private readonly userReferralService: UserReferralService
   ) {}
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    const user = await this.findOneById(userId);
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(
+      changePasswordDto.password,
+      saltRounds
+    );
+    user.password = hashedPassword;
+    return await this.usersRepository.save(user);
+  }
 
   async getWalletHistory(userId: string, query: GetWalletHistoryQueryDto) {
     let startDate = new Date(0);
@@ -378,7 +391,7 @@ export class UserService {
 
   async increaseTotalEarned(id: string, value: number) {
     const user = await this.findOneById(id);
-    user.totalEarned += value;    
+    user.totalEarned += value;
     this.saveUser(user);
     return user;
   }

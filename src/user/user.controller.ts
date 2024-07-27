@@ -43,6 +43,7 @@ import {
 import { GetUserReferralsDto } from "./dto/get-user-referrals.dto";
 import { GetWalletHistoryQueryDto } from "./dto/get-wallet-history.dto";
 import { GetWalletHistoryResponseDto } from "./dto/get-wallet-history-response.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 
 @ApiTags("user")
 @ApiBearerAuth("JWT")
@@ -262,6 +263,11 @@ export class UserController {
     if (req.user?.balance === 0 || req.user?.balance < sendMoneyDTO.cost)
       return new BadGatewayException(`Недостаточно средств`);
     return await this.userService.sendMoney(req.user, sendMoneyDTO);
+  }
+
+  @Post("/change-password")
+  async changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
+    return await this.userService.changePassword(req.user.id, changePasswordDto);
   }
 
   @Post("/withdraw")
