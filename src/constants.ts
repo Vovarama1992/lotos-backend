@@ -4,16 +4,30 @@ enum UserRole {
   USER = "user",
 }
 
-
 export enum ENVIRONMENT {
-  LOCAL = 'local',
-  STAGING = 'staging',
-  PRODUCTION = 'prod'
+  LOCAL = "local",
+  STAGING = "staging",
+  PRODUCTION = "prod",
 }
+
 enum Lang {
   RU = "ru",
   EN = "en",
 }
+
+export const CorsOrigins = [
+  "http://localhost:5173",
+  "http://lotos.na4u.ru",
+  "https://lotos.na4u.ru",
+  "http://adarfawerf.ru",
+  "https://adarfawerf.ru",
+  "https://lotos-casino.pro",
+  "https://lotos-casino.com",
+  "https://lotos-casino.net",
+  "https://lotos-casino.site",
+  "https://lotoscasino.site",
+  process.env.FRONTEND_URL,
+];
 
 export { UserRole, Lang };
 

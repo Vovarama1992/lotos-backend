@@ -3,11 +3,12 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { readFileSync } from "fs";
-import { ENVIRONMENT } from "./constants";
+import { CorsOrigins, ENVIRONMENT } from "./constants";
 
 async function bootstrap() {
   let httpsOptions = {};
 
+  //ssl for localhost for staging and production
   if (process.env.NODE_ENV !== ENVIRONMENT.LOCAL) {
     httpsOptions = {
       httpsOptions: {
@@ -20,19 +21,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: new Logger(),
     cors: {
-      origin: [
-        "http://localhost:5173",
-        "http://lotos.na4u.ru",
-        "https://lotos.na4u.ru",
-        "http://adarfawerf.ru",
-        "https://adarfawerf.ru",
-        "https://lotos-casino.pro",
-        "https://lotos-casino.com",
-        "https://lotos-casino.net",
-        "https://lotos-casino.site",
-        "https://lotoscasino.site",
-        process.env.FRONTEND_URL,
-      ],
+      origin: CorsOrigins,
       methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
       allowedHeaders: ["Content-Type", "Authorization"],
       exposedHeaders: ["Authorization"],

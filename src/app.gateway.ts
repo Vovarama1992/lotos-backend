@@ -9,9 +9,10 @@ import {
 import { verify } from "jsonwebtoken";
 import { Server, Socket } from "socket.io";
 import { SocketService } from "./gateway/gateway.service";
+import { CorsOrigins } from "./constants";
 
 @WebSocketGateway({
-  cors: { origin: ["http://localhost:5173", "http://95.213.173.58:5173", "https://adarfawerf.ru", "https://lotos.na4u.ru"]},
+  cors: { origin: CorsOrigins},
 })
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
