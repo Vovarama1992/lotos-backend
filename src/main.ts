@@ -9,6 +9,7 @@ import { readFileSync } from "fs";
 
 async function bootstrap() {
   let httpsOptions = {};
+
   if (process.env.ENV !== "dev") {
     httpsOptions = {
       httpsOptions: {
@@ -25,9 +26,9 @@ async function bootstrap() {
         "http://localhost:5173",
         "http://lotos.na4u.ru",
         "https://lotos.na4u.ru",
-        "http://95.213.173.58:5173",
         "http://adarfawerf.ru",
         "https://adarfawerf.ru",
+        process.env.FRONTEND_URL
       ],
       methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
       allowedHeaders: ["Content-Type", "Authorization"],
