@@ -43,11 +43,14 @@ import { UserReferralModule } from "./user-referral/user-referral.module";
 import { WithdrawHistoryModule } from "./withdraw-history/withdraw-history.module";
 import { MailModule } from "./mail/mail.module";
 import { MailService } from "./mail/mail.service";
+import { ENVIRONMENT } from "./constants";
 
+const ENV = process.env.NODE_ENV;
+console.log(ENV)
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ".env",
+      envFilePath: !ENV ? `.env.${ENVIRONMENT.LOCAL}` : `.env.${ENV}`,
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),

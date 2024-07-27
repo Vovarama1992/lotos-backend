@@ -3,11 +3,16 @@ import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handleba
 import { Module } from "@nestjs/common";
 import { MailService } from "./mail.service";
 import { join } from "path";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ENVIRONMENT } from "src/constants";
+
+const ENV = process.env.NODE_ENV;
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: !ENV ? `.env.${ENVIRONMENT.LOCAL}` : `.env.${ENV}`,
+    }),
     MailerModule.forRoot({
       transport: {
         host: process.env.MAIL_HOST,

@@ -13,6 +13,7 @@ import { AdminService } from "src/admin/admin.service";
 import { TransactionService } from "src/transaction/transaction.service";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
+import { ENVIRONMENT } from "src/constants";
 
 const AdminSetName = "admin-usernames";
 
@@ -63,7 +64,7 @@ export class AdminBotService {
     private readonly transactionService: TransactionService,
     private readonly withdrawalService: WithdrawHistoryService
   ) {
-    if (process.env.ENV === "dev") return;
+    if (process.env.NODE_ENV === ENVIRONMENT.LOCAL) return;
 
     const bot = new TelegramBot(process.env.TELEGRAM_ADMIN_BOT_TOKEN, {
       polling: true,
@@ -98,7 +99,7 @@ export class AdminBotService {
     msg: TelegramBot.Message
   ) {
     const isAuth = await this.checkUserAuth(msg.chat.username);
-
+    console.log(isAuth)
     if (!isAuth) {
       const isSuccess = await this.authenticateUser(msg);
       console.log(msg);

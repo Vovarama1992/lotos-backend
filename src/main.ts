@@ -3,14 +3,12 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { readFileSync } from "fs";
-// import * as express from "express"
-// import { ExpressAdapter } from "@nestjs/platform-express";
-//const expressInstance = express();
+import { ENVIRONMENT } from "./constants";
 
 async function bootstrap() {
   let httpsOptions = {};
 
-  if (process.env.ENV !== "dev") {
+  if (process.env.NODE_ENV === ENVIRONMENT.STAGING) {
     httpsOptions = {
       httpsOptions: {
         key: readFileSync(process.env.SSL_KEY_PATH),

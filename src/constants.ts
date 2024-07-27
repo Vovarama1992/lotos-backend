@@ -4,6 +4,12 @@ enum UserRole {
   USER = "user",
 }
 
+
+export enum ENVIRONMENT {
+  LOCAL = 'local',
+  STAGING = 'staging',
+  PRODUCTION = 'prod'
+}
 enum Lang {
   RU = "ru",
   EN = "en",
