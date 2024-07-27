@@ -8,7 +8,7 @@ import { ENVIRONMENT } from "./constants";
 async function bootstrap() {
   let httpsOptions = {};
 
-  if (process.env.NODE_ENV === ENVIRONMENT.STAGING) {
+  if (process.env.NODE_ENV !== ENVIRONMENT.LOCAL) {
     httpsOptions = {
       httpsOptions: {
         key: readFileSync(process.env.SSL_KEY_PATH),
@@ -31,7 +31,7 @@ async function bootstrap() {
         "https://lotos-casino.net",
         "https://lotos-casino.site",
         "https://lotoscasino.site",
-        process.env.FRONTEND_URL
+        process.env.FRONTEND_URL,
       ],
       methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
       allowedHeaders: ["Content-Type", "Authorization"],
