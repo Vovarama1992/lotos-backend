@@ -149,8 +149,8 @@ export class UserReferralService {
 
     const stats = {
       userQuantity: usersWithLevel.length,
-      lostAmount: +lostAmount.toFixed(2),
-      wonAmount: totalCashback,
+      lostAmount: lostAmount.toFixed(2),
+      wonAmount: totalCashback.toFixed(2),
     };
 
     return { stats, users: usersWithLevel, link: referralLink };
