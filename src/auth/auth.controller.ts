@@ -46,6 +46,7 @@ export class AuthController {
     summary: "Регистрация (вход) с помощью телеграм",
   })
   receiveTelegramAuthData(@Body() data: GetTelegramAuthDto) {
+    console.log(data)
     return this.authService.signInAsTelegramUser(data);
   }
 
