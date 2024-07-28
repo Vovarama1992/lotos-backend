@@ -327,6 +327,7 @@ ${userRow}
     data: any
   ) {
     const chatId = await this.getChatIdByUsername(username);
+    console.log(`[sendMessageToUser]   username: ${username}, chatId: ${chatId}`)
 
     if (type === TelegramAdminBotNotificationType.INCOMING) {
       this.sendIncomingNotification(chatId, data as SendIncomingMessage);

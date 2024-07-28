@@ -28,6 +28,7 @@ export class NotificationService {
     adminUserIds: string[],
     data: SendIncomingMessage | SendWithdrawalMessage
   ) {
+    console.log("sendAdminTelegramNotifications")
     // find admin user usernames
     const usernames = (
       await this.userRepository.find({
@@ -38,6 +39,8 @@ export class NotificationService {
 
     // filter for non empty usernames
     const filteredUsernames = usernames?.filter((username) => username?.length);
+
+    console.log("usernames: ",filteredUsernames)
 
     let dataType = TelegramAdminBotNotificationType.INCOMING;
     if (data instanceof SendWithdrawalMessage) {
