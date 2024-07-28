@@ -171,9 +171,9 @@ export class UserController {
       this.userService.changeBalance(data.login, newBalance);
 
       if (profit < 0) {
-        await this.userService.increaseTotalLoss(data.login, +Math.abs(profit).toFixed(2));
+        await this.userService.increaseTotalLoss(data.login, +Math.abs(+data.bet).toFixed(2));
       } else {
-        await this.userService.increaseTotalEarned(data.login, +Math.abs(profit).toFixed(2));
+        await this.userService.increaseTotalEarned(data.login, +Math.abs(+data.win).toFixed(2));
       }
 
       return {
