@@ -108,7 +108,7 @@ export class UserReferralService {
         totalCashbackInLevel += selfCashback;
         endIndex = 4;
 
-        usersWithLevel.push({ ...user, level: 1, cashback: selfCashback });
+        usersWithLevel.push({ ...user, level: 1, cashback: selfCashback.toFixed(2) });
       }
 
       // суммируем кэшбэк топ 5 пользователей по проигрышу на каждом уровне кэшбэков
@@ -134,7 +134,7 @@ export class UserReferralService {
   async getReferralsWithStats(userId: string, type: GetUserReferralType) {
     const {currentDomain = process.env.FRONTEND_URL} = await this.configService.get();
     const referralLink = `${currentDomain}?user_referral_id=${userId}`;
-    
+
     const { totalCashback, usersWithLevel } =
       await this.calculateUserReferralCashback(userId);
 
