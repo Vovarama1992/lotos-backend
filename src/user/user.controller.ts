@@ -58,7 +58,7 @@ export class UserController {
 
   // run every monday at 10am - расчитать и зачислить кэшбэк каждому юзеру
   //@Cron("0 10 * * MON")
-  @Cron("* * * * *")
+  @Cron("0 17 * * SUN")
   depositCashBack() {
     console.log("Running cron job - deposit cashback to users (Monday 10 am)");
     this.userService.depositCashback();
