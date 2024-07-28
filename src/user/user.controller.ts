@@ -153,9 +153,8 @@ export class UserController {
     }
 
     if (cmd === "writeBet") {
-
-      // this.logger.log("WRITE_BET");
-      // this.logger.log(data);
+      this.logger.log("WRITE_BET");
+      this.logger.log(data);
 
       if (balance < data.bet) {
         return {
@@ -164,17 +163,20 @@ export class UserController {
         };
       }
       const profit = +data.win - +data.bet;
-      // this.logger.log(`profit = ${profit}`);
 
       const newBalance = balance + profit;
       this.gameHistory.changeIsStart(data.sessionId);
       this.userService.changeBalance(data.login, newBalance);
 
-      if (profit < 0) {
-        await this.userService.increaseTotalLoss(data.login, +Math.abs(+data.bet).toFixed(2));
-      } else {
-        await this.userService.increaseTotalEarned(data.login, +Math.abs(+data.win).toFixed(2));
-      }
+      await this.userService.increaseTotalLoss(
+        data.login,
+        +Math.abs(+data.bet).toFixed(2)
+      );
+      
+      await this.userService.increaseTotalEarned(
+        data.login,
+        +Math.abs(+data.win).toFixed(2)
+      );
 
       return {
         status: "success",
@@ -266,8 +268,14 @@ export class UserController {
   }
 
   @Post("/change-password")
-  async changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
-    return await this.userService.changePassword(req.user.id, changePasswordDto);
+  async changePassword(
+    @Req() req,
+    @Body() changePasswordDto: ChangePasswordDto
+  ) {
+    return await this.userService.changePassword(
+      req.user.id,
+      changePasswordDto
+    );
   }
 
   @Post("/withdraw")
