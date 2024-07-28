@@ -5,12 +5,19 @@ import { User } from "src/user/entities/user.entity";
 import { Repository } from "typeorm";
 import { UserReferral } from "./entities/user-referral.entity";
 import { ConfigService } from "src/config/config.service";
+import {
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+} from "src/transaction/entities/transaction.entity";
 
 @Injectable()
 export class UserReferralService {
   constructor(
     @InjectRepository(UserReferral)
     private readonly userReferralRepository: Repository<UserReferral>,
+    @InjectRepository(Transaction)
+    private readonly transactionRepository: Repository<Transaction>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService
@@ -69,6 +76,33 @@ export class UserReferralService {
     );
   }
 
+  async calculateUserTotalReferralCashback(userId: string) {
+    if (!userId) {
+      throw new InternalServerErrorException(
+        "calculateUserTotalReferralCashback: userId can't be empty!"
+      );
+    }
+
+    let sumOfVerifiedCashback = 0,
+      sumOfAllCashback = 0;
+
+    const cashbackTransactions = await this.transactionRepository.find({
+      where: { user: { id: userId }, method: TransactionType.CASHBACK },
+    });
+
+    cashbackTransactions.forEach((transaction) => {
+      if (transaction.status === TransactionStatus.SUCCESS) {
+        sumOfVerifiedCashback += transaction.amount;
+      }
+      sumOfAllCashback += transaction.amount;
+    });
+
+    return {
+      verifiedCashback: sumOfVerifiedCashback,
+      totalCashback: sumOfAllCashback,
+    };
+  }
+
   async calculateUserReferralCashback(userId: string) {
     if (!userId)
       throw new InternalServerErrorException(
@@ -108,7 +142,11 @@ export class UserReferralService {
         totalCashbackInLevel += selfCashback;
         endIndex = 4;
 
-        usersWithLevel.push({ ...user, level: 1, cashback: selfCashback.toFixed(2) });
+        usersWithLevel.push({
+          ...user,
+          level: 1,
+          cashback: selfCashback.toFixed(2),
+        });
       }
 
       // суммируем кэшбэк топ 5 пользователей по проигрышу на каждом уровне кэшбэков
@@ -132,7 +170,8 @@ export class UserReferralService {
   }
 
   async getReferralsWithStats(userId: string, type: GetUserReferralType) {
-    const {currentDomain = process.env.FRONTEND_URL} = await this.configService.get();
+    const { currentDomain = process.env.FRONTEND_URL } =
+      await this.configService.get();
     const referralLink = `${currentDomain}?user_referral_id=${userId}`;
 
     const { totalCashback, usersWithLevel } =

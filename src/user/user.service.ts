@@ -130,10 +130,15 @@ export class UserService {
       }
     });
 
+    const { verifiedCashback, totalCashback } =
+      await this.userReferralService.calculateUserTotalReferralCashback(userId);
+
     return {
       balance: currentBalance,
       totalIncoming,
       totalWithdrawal,
+      totalCashback,
+      verifiedCashback,
     };
   }
 
