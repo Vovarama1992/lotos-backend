@@ -38,8 +38,13 @@ export class PaymentDetails {
   @Column({ enum: DepositMode, default: DepositMode.MANUAL })
   mode: DepositMode;
 
+  @ApiProperty()
   @Column({ default: 1 })
   priority: number;
+
+  @ApiProperty()
+  @Column({default: ""})
+  recipient_name: string;
 
   @OneToMany(() => DepositSession, (depositSession) => depositSession.card, {
     cascade: true,

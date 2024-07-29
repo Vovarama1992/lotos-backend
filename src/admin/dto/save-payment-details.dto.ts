@@ -36,6 +36,11 @@ class PaymentDetailsDto {
   @ApiProperty({ type: "string" })
   @IsString()
   @IsNotEmpty()
+  recipient_name: string;
+
+  @ApiProperty({ type: "string" })
+  @IsString()
+  @IsNotEmpty()
   data: string;
 
   @ApiProperty()
