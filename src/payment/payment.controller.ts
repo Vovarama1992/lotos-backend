@@ -167,11 +167,13 @@ export class PaymentController {
         }
       );
 
+      
+
       this.notificationService.createNotifications(
         adminUserIds,
         SocketEvent.PAYMENT_CRYPTO_SUCCESS,
         {
-          message: `Пользователь ${user.email || user.telegram_username || user.phone} успешно пополнил счёт через криптоэквайринг`,
+          message: `Пользователь ${this.userService.getUserLabel(user)} успешно пополнил счёт через криптоэквайринг`,
           status: NotificationStatus.INFO,
           type: NotificationType.SYSTEM,
           data: {

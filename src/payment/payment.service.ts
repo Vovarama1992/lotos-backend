@@ -160,7 +160,7 @@ export class PaymentService {
       adminUserIds,
       SocketEvent.PAYMENT_BANK_PENDING,
       {
-        message: `Пользователь ${user.email || user.telegram_username || user.phone} создал заявку на банковское пополнение, ожидание оплаты`,
+        message: `Пользователь ${this.userService.getUserLabel(user)} создал заявку на банковское пополнение, ожидание оплаты`,
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
         data: {
@@ -316,7 +316,7 @@ export class PaymentService {
       adminUserIds,
       SocketEvent.PAYMENT_BANK_WAITING_CONFIRMATION,
       {
-        message: `Пользователь ${user.email || user.telegram_username || user.phone} ожидает вашего подтверждения платежа`,
+        message: `Пользователь ${this.userService.getUserLabel(user)} ожидает вашего подтверждения платежа`,
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
         data: {

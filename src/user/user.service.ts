@@ -193,7 +193,7 @@ export class UserService {
       adminIds,
       SocketEvent.PAYMENT_CASHBACK_WAITING_CONFIRMATION,
       {
-        message: `Пользователь ${user.email || user.telegram_username || user.phone} ожидает подтверждения начисления кэшбэка по реферальной программе в размере ${cashback} РУБ`,
+        message: `Пользователь ${this.getUserLabel(user)} ожидает подтверждения начисления кэшбэка по реферальной программе в размере ${cashback} РУБ`,
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
         data: {
@@ -201,6 +201,21 @@ export class UserService {
         },
       }
     );
+  }
+
+  getUserLabel(user: User) {
+    const primaryInfo =
+      user.email || user.telegram_username || user.phone || user.telegram_id;
+    let fullname = "";
+    if (user.name || user.surname) {
+      fullname = `${user.name || ""} ${user.surname || ""}`;
+    }
+
+    let userLabel = primaryInfo;
+    if (fullname) {
+      userLabel = `${userLabel} (${fullname})`;
+    }
+    return userLabel;
   }
 
   async markNotificationAsViewed(notificationId: string) {
@@ -277,9 +292,9 @@ export class UserService {
     });
   }
 
-  async findOneByTelegramUsername(username: string): Promise<UserResponse> {
-    return await this.usersRepository.findOne({
-      where: { telegram_username: username },
+  async findOneByTelegramId(telegramId: number): Promise<UserResponse> {
+    return await this.usersRepository.findOneOrFail({
+      where: { telegram_id: telegramId },
     });
   }
 
@@ -424,7 +439,7 @@ export class UserService {
       adminUserIds,
       "withdraw.pending",
       {
-        message: `Новая заявка на вывод средств от ${user.email || user.telegram_username || user.phone}`,
+        message: `Новая заявка на вывод средств от ${this.getUserLabel(user)}`,
         status: NotificationStatus.INFO,
         type: NotificationType.SYSTEM,
       }
@@ -484,7 +499,7 @@ export class UserService {
         adminUserIds,
         "withdraw.cancelled",
         {
-          message: `Заявка на вывод средств от ${user.email || user.telegram_username || user.phone} была отменена`,
+          message: `Заявка на вывод средств от ${this.getUserLabel(user)} была отменена`,
           status: NotificationStatus.INFO,
           type: NotificationType.SYSTEM,
         }

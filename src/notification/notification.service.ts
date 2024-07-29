@@ -28,19 +28,19 @@ export class NotificationService {
     adminUserIds: string[],
     data: SendIncomingMessage | SendWithdrawalMessage
   ) {
-    console.log("sendAdminTelegramNotifications")
+    console.log("sendAdminTelegramNotifications");
     // find admin user usernames
-    const usernames = (
+    const telegramIds = (
       await this.userRepository.find({
         where: { id: In(adminUserIds) },
-        select: { telegram_username: true },
+        select: { telegram_id: true },
       })
-    )?.map((user) => user.telegram_username);
+    )?.map((user) => user.telegram_id);
 
     // filter for non empty usernames
-    const filteredUsernames = usernames?.filter((username) => username?.length);
+    const filteredTelegramIds = telegramIds?.filter((id) => id !== null);
 
-    console.log("usernames: ",filteredUsernames)
+    console.log("admin telegram ids: ", filteredTelegramIds);
 
     let dataType = TelegramAdminBotNotificationType.INCOMING;
     if (data instanceof SendWithdrawalMessage) {
@@ -48,10 +48,10 @@ export class NotificationService {
     }
 
     //send all messages
-    for (let i = 0; i < filteredUsernames.length; i++) {
-      const adminUsername = filteredUsernames[i];
+    for (let i = 0; i < filteredTelegramIds.length; i++) {
+      const adminTelegramId = filteredTelegramIds[i];
       await this.sendAdminTelegramNotification(
-        adminUsername,
+        adminTelegramId,
         dataType,
         data
       ).catch((err) =>
@@ -63,11 +63,11 @@ export class NotificationService {
   }
 
   async sendAdminTelegramNotification(
-    adminUsername: string,
+    adminTelegramId: number,
     type: TelegramAdminBotNotificationType,
     data: SendIncomingMessage | SendWithdrawalMessage
   ) {
-    return this.adminBotService.sendMessageToUser(adminUsername, type, data);
+    return this.adminBotService.sendMessageToUser(adminTelegramId, type, data);
   }
 
   async getNotifications(

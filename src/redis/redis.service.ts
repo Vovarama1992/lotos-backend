@@ -13,7 +13,7 @@ export class RedisService {
     });
   }
 
-  async addElementToSet(setName: string, key: string) {
+  async addElementToSet(setName: string, key: string | number) {
     await this.client.sadd(setName, key);
   }
 
@@ -25,7 +25,7 @@ export class RedisService {
     return await this.client.smembers(setName);
   }
 
-  async isSetMember(setName: string, key: string) {
+  async isSetMember(setName: string, key: string | number) {
     return this.client.sismember(setName, key);
   }
 
@@ -39,7 +39,7 @@ export class RedisService {
 
   async setJSON(key: string, value: Record<string, any>) {
     await this.client.set(key, JSON.stringify(value));
-    return value
+    return value;
   }
 
   async getJSON(key: string) {

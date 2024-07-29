@@ -14,6 +14,7 @@ import { TransactionService } from "src/transaction/transaction.service";
 import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.service";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { ENVIRONMENT } from "src/constants";
+import { UserService } from "src/user/user.service";
 
 const AdminSetName = "admin-usernames";
 
@@ -61,10 +62,12 @@ export class AdminBotService {
   public constructor(
     private redisService: RedisService,
     private readonly adminService: AdminService,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
     private readonly transactionService: TransactionService,
     private readonly withdrawalService: WithdrawHistoryService
   ) {
-    if (process.env.NODE_ENV === ENVIRONMENT.LOCAL) return;
+    //if (process.env.NODE_ENV === ENVIRONMENT.LOCAL) return;
 
     const bot = new TelegramBot(process.env.TELEGRAM_ADMIN_BOT_TOKEN, {
       polling: true,
@@ -82,11 +85,11 @@ export class AdminBotService {
     this.handleProcessCommand = this.handleProcessCommand.bind(this);
   }
 
-  private async authenticateUser(msg: TelegramBot.Message) {
+  private async authenticateUser(telegramId: number) {
     let valid = true;
     try {
-      await this.adminService.getUserByTelegramUsername(msg.chat.username);
-      await this.redisService.addElementToSet(AdminSetName, msg.chat.username);
+      await this.userService.findOneByTelegramId(telegramId);
+      await this.redisService.addElementToSet(AdminSetName, telegramId);
     } catch (_err) {
       valid = false;
     }
@@ -98,29 +101,29 @@ export class AdminBotService {
     handler: (msg: TelegramBot.Message) => void,
     msg: TelegramBot.Message
   ) {
-    const isAuth = await this.checkUserAuth(msg.chat.username);
+    const isAuth = await this.checkUserAuth(msg.from.id);
     console.log(isAuth)
     if (!isAuth) {
-      const isSuccess = await this.authenticateUser(msg);
+      const isSuccess = await this.authenticateUser(msg.from.id);
       console.log(msg);
       if (!isSuccess) {
         this.bot.sendMessage(msg.chat.id, "Доступ запрещён!");
       } else {
         try {
-          await this.getChatIdByUsername(msg.chat.username);
+          await this.getChatIdByTelegramId(msg.chat.id);
         } catch (err) {
           if (err instanceof TelegramBotChatNotFoundError) {
-            this.initChat(msg.chat.username, msg.chat.id);
+            this.initChat(msg.from.id, msg.chat.id);
           }
         }
         handler(msg);
       }
     } else {
       try {
-        await this.getChatIdByUsername(msg.chat.username);
+        await this.getChatIdByTelegramId(msg.from.id);
       } catch (err) {
         if (err instanceof TelegramBotChatNotFoundError) {
-          this.initChat(msg.chat.username, msg.chat.id);
+          this.initChat(msg.from.id, msg.chat.id);
         }
       }
 
@@ -163,7 +166,7 @@ export class AdminBotService {
   }
 
   private handleStartBot(msg: TelegramBot.Message) {
-    this.initChat(msg.chat.username, msg.chat.id);
+    this.initChat(msg.from.id, msg.chat.id);
   }
 
   private sendAddAdminPrompt(chatId: number) {
@@ -191,18 +194,18 @@ export class AdminBotService {
     this.resetSceneStep();
   }
 
-  private checkUserAuth(tgUsername: string) {
-    return this.redisService.isSetMember(AdminSetName, tgUsername);
+  private checkUserAuth(telegramId: number) {
+    return this.redisService.isSetMember(AdminSetName, telegramId);
   }
 
   private resetSceneStep() {
     this.sceneStep = null;
   }
 
-  private async initChat(username: string, chatId: number) {
+  private async initChat(telegramId: number, chatId: number) {
     let chats = await this.getAdminChats();
     if (chats) {
-      chats[username] = chatId;
+      chats[telegramId] = chatId;
     } else {
       chats = {};
     }
@@ -217,11 +220,11 @@ export class AdminBotService {
     return await this.redisService.setJSON("admin-telegram-chats", chats);
   }
 
-  private async getChatIdByUsername(username: string) {
+  private async getChatIdByTelegramId(telegramId: number) {
     const chats = await this.getAdminChats();
-    if (!chats[username]) throw new TelegramBotChatNotFoundError();
+    if (!chats[telegramId]) throw new TelegramBotChatNotFoundError();
 
-    return chats[username];
+    return chats[telegramId];
   }
 
   private getUserRowForMessage(
@@ -322,12 +325,12 @@ ${userRow}
   }
 
   async sendMessageToUser(
-    username: string,
+    telegramId: number,
     type: TelegramAdminBotNotificationType,
     data: any
   ) {
-    const chatId = await this.getChatIdByUsername(username);
-    console.log(`[sendMessageToUser]   username: ${username}, chatId: ${chatId}`)
+    const chatId = await this.getChatIdByTelegramId(telegramId);
+    console.log(`[sendMessageToUser]   tg id: ${telegramId}, chatId: ${chatId}`)
 
     if (type === TelegramAdminBotNotificationType.INCOMING) {
       this.sendIncomingNotification(chatId, data as SendIncomingMessage);

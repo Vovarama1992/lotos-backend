@@ -116,6 +116,13 @@ export class User {
   })
   telegram_username: string;
 
+  @ApiProperty({ example: "username", nullable: true })
+  @Column({
+    nullable: true,
+    unique: true
+  })
+  telegram_id: number;
+
   @ApiProperty({ nullable: true })
   @Column({ nullable: true, select: false })
   password: string;

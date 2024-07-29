@@ -37,8 +37,8 @@ export class AuthService {
   }
 
   async signInAsTelegramUser(data: GetTelegramAuthDto) {
-    let existingUser = await this.userService.findOneByTelegramUsername(
-      data.username
+    let existingUser = await this.userService.findOneByTelegramId(
+      data.id
     );
 
     const isNew = !existingUser;
@@ -54,6 +54,7 @@ export class AuthService {
       //create new user
 
       existingUser = await this.userService.saveUser({
+        telegram_id: data.id,
         telegram_username: data.username,
         name: data.first_name,
         surname: data.last_name,
