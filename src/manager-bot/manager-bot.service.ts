@@ -67,7 +67,7 @@ export class AdminBotService {
     private readonly transactionService: TransactionService,
     private readonly withdrawalService: WithdrawHistoryService
   ) {
-    //if (process.env.NODE_ENV === ENVIRONMENT.LOCAL) return;
+    if (process.env.NODE_ENV === ENVIRONMENT.LOCAL) return;
 
     const bot = new TelegramBot(process.env.TELEGRAM_ADMIN_BOT_TOKEN, {
       polling: true,

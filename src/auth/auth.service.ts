@@ -37,12 +37,14 @@ export class AuthService {
   }
 
   async signInAsTelegramUser(data: GetTelegramAuthDto) {
-    let existingUser = await this.userService.findOneByTelegramId(
-      data.id
-    );
+    let existingUser = null;
+    try {
+      existingUser = await this.userService.findOneByTelegramId(data.id);
+    } catch (err) {}
 
     const isNew = !existingUser;
 
+    console.log('check signature: ', this.checkSignature(data))
     // if (!this.checkSignature(data))
     //   throw new ForbiddenException("Forbidden. Hash mismatch!");
 
