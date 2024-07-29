@@ -107,19 +107,6 @@ export class AuthService {
   }
 
   async sendCode(phone: string, code: number) {
-    // const url = "https://api.iqsms.ru/messages/v2/send.json";
-
-    // const body = {
-    //   messages: [
-    //     {
-    //       phone: phone,
-    //       clientId: "1",
-    //       text: "Ваш код: " + code,
-    //     },
-    //   ],
-    //   login: process.env.IQSMS_LOGIN,
-    //   password: process.env.IQSMS_PASSWORD,
-    // };
     const url = "https://api.iqsms.ru/messages/v2/send/";
     const params = {
       phone: phone,

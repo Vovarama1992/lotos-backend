@@ -11,6 +11,7 @@ export class SendIncomingMessage {
   timestamp: Date | string;
   recipient_payment_info: string;
   payment_details: PaymentDetails
+  sender_name: string;
 
   constructor(transaction: Partial<SendIncomingMessage>) {
     Object.assign(this, transaction);

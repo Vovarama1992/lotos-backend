@@ -112,7 +112,7 @@ export class TransactionService {
       order: {
         timestamp: "DESC",
       },
-      relations: { user: options?.includeUser },
+      relations: { user: options?.includeUser, payment_details: true },
     });
   }
 }

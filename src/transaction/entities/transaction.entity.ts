@@ -49,6 +49,10 @@ export class Transaction {
   amount: number;
 
   @ApiProperty()
+  @Column({ nullable: false, default: "" })
+  sender_name: string;
+
+  @ApiProperty()
   @Column({ nullable: true })
   recipient_payment_info: string;
 

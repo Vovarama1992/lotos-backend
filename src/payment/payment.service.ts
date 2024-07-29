@@ -125,7 +125,7 @@ export class PaymentService {
     amount: number,
     paymentDetails: PaymentDetails,
     user: User,
-    config: CasinoConfig
+    senderName: string
   ) {
     const invoice = new BankInvoice({
       amount,
@@ -140,6 +140,7 @@ export class PaymentService {
       type: "bank",
       status: TransactionStatus.PENDING,
       payment_details: paymentDetails,
+      sender_name: senderName,
     });
 
     const adminUserIds = await this.userService.getAdminIds();
@@ -228,7 +229,7 @@ export class PaymentService {
     createBankInvoiceDto: CreateBankInvoiceDto,
     user: User
   ) {
-    const { amount, payment_detail_id } = createBankInvoiceDto;
+    const { amount, sender_name, payment_detail_id } = createBankInvoiceDto;
     //choose between automatic and manual
     const appConfig = await this.configService.get();
     const paymentDetails = await this.paymentDetailsRepository.findOneByOrFail({
@@ -248,7 +249,7 @@ export class PaymentService {
         amount,
         paymentDetails,
         user,
-        appConfig
+        sender_name
       );
     }
 
@@ -336,6 +337,7 @@ export class PaymentService {
         amount: transaction.amount,
         timestamp: transaction.timestamp,
         payment_details: transaction.payment_details,
+        sender_name: transaction.sender_name
       })
     );
 

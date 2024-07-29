@@ -67,7 +67,7 @@ export class AdminBotService {
     private readonly transactionService: TransactionService,
     private readonly withdrawalService: WithdrawHistoryService
   ) {
-    if (process.env.NODE_ENV === ENVIRONMENT.LOCAL) return;
+    //if (process.env.NODE_ENV === ENVIRONMENT.LOCAL) return;
 
     const bot = new TelegramBot(process.env.TELEGRAM_ADMIN_BOT_TOKEN, {
       polling: true,
@@ -263,6 +263,7 @@ ${userRow}
 <b>Реквизиты получателя: </b>
 ${data.payment_details?.data}
 <b>Сумма:</b>   ${data.amount} RUB
+<b>Имя покупателя:</b>   ${data.sender_name}
 <b>Дата:</b>   ${moment(data.timestamp).format("DD.MM.YYYY, hh:mm:ss")}
 
 <b>Статус:</b>  в обработке`,
