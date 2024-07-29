@@ -8,7 +8,7 @@ export class CryptocloudService {
     this.baseUrl = "https://api.cryptocloud.plus/v2/";
   }
 
-  async sendRequest(endpoint, method = "POST", payload = null) {
+  async sendRequest(endpoint: string, method = "POST", payload = null) {
     const headers = {
       Authorization: `Token ${process.env.CRYPTOCLOUD_API_KEY}`,
       "Content-Type": "application/json",
@@ -24,15 +24,15 @@ export class CryptocloudService {
     return response.json();
   }
 
-  async createInvoice(invoiceData) {
+  async createInvoice(invoiceData: any): Promise<any> {
     return await this.sendRequest("invoice/create", "POST", {shop_id: process.env.CRYPTOCLOUD_SHOP_ID, ...invoiceData});
   }
 
-  cancelInvoice(uuid) {
+  cancelInvoice(uuid: any) {
     return this.sendRequest("invoice/merchant/canceled", "POST", { uuid });
   }
 
-  listInvoices(startDate, endDate, offset = 0, limit = 10) {
+  listInvoices(startDate: any, endDate: any, offset = 0, limit = 10) {
     return this.sendRequest("invoice/merchant/list", "POST", {
       start: startDate,
       end: endDate,
@@ -41,7 +41,7 @@ export class CryptocloudService {
     });
   }
 
-  getInvoiceInfo(uuids) {
+  getInvoiceInfo(uuids: any): Promise<any> {
     return this.sendRequest("invoice/merchant/info", "POST", { uuids });
   }
 
@@ -49,7 +49,7 @@ export class CryptocloudService {
     return this.sendRequest("merchant/wallet/balance/all", "POST");
   }
 
-  getStatistics(startDate, endDate) {
+  getStatistics(startDate: any, endDate: any) {
     return this.sendRequest("invoice/merchant/statistics", "POST", {
       start: startDate,
       end: endDate,
