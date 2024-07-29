@@ -44,7 +44,7 @@ export class Transaction {
   @Column()
   method: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: "double precision" })
   @Column()
   amount: number;
 

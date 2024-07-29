@@ -28,12 +28,12 @@ export class Withdraw {
   @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" }) // Recommended
   timestamp: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: "double precision" })
   @Column()
   amount: number;
 
   @ApiProperty()
-  @Column({default: "rub"})
+  @Column({ default: "rub" })
   currency: string;
 
   @ApiProperty()
