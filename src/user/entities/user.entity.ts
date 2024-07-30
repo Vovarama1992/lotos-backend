@@ -121,7 +121,7 @@ export class User {
     nullable: true,
     unique: true
   })
-  telegram_id: number;
+  telegram_id: string;
 
   @ApiProperty({ nullable: true })
   @Column({ nullable: true, select: false })

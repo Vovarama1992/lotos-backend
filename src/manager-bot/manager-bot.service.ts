@@ -85,7 +85,7 @@ export class AdminBotService {
     this.handleProcessCommand = this.handleProcessCommand.bind(this);
   }
 
-  private async authenticateUser(telegramId: number) {
+  private async authenticateUser(telegramId: string) {
     let valid = true;
     try {
       await this.userService.findOneByTelegramId(telegramId);
@@ -104,13 +104,13 @@ export class AdminBotService {
     const isAuth = await this.checkUserAuth(msg.from.id);
     console.log(isAuth)
     if (!isAuth) {
-      const isSuccess = await this.authenticateUser(msg.from.id);
+      const isSuccess = await this.authenticateUser(msg.from.id.toString());
       console.log(msg);
       if (!isSuccess) {
         this.bot.sendMessage(msg.chat.id, "Доступ запрещён!");
       } else {
         try {
-          await this.getChatIdByTelegramId(msg.chat.id);
+          await this.getChatIdByTelegramId(msg.chat.id.toString());
         } catch (err) {
           if (err instanceof TelegramBotChatNotFoundError) {
             this.initChat(msg.from.id, msg.chat.id);
@@ -120,7 +120,7 @@ export class AdminBotService {
       }
     } else {
       try {
-        await this.getChatIdByTelegramId(msg.from.id);
+        await this.getChatIdByTelegramId(msg.from.id.toString());
       } catch (err) {
         if (err instanceof TelegramBotChatNotFoundError) {
           this.initChat(msg.from.id, msg.chat.id);
@@ -220,7 +220,7 @@ export class AdminBotService {
     return await this.redisService.setJSON("admin-telegram-chats", chats);
   }
 
-  private async getChatIdByTelegramId(telegramId: number) {
+  private async getChatIdByTelegramId(telegramId: string) {
     const chats = await this.getAdminChats();
     if (!chats[telegramId]) throw new TelegramBotChatNotFoundError();
 
@@ -326,7 +326,7 @@ ${userRow}
   }
 
   async sendMessageToUser(
-    telegramId: number,
+    telegramId: string,
     type: TelegramAdminBotNotificationType,
     data: any
   ) {

@@ -82,4 +82,16 @@ export class UpdateUserProfileDto {
   @IsBoolean()
   @IsNotEmpty()
   bonusAutoActivation?: boolean;
+
+  @ApiProperty({ example: "username", nullable: true })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  telegram_username?: string;
+
+  @ApiProperty({ example: "6687867337", nullable: true })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  telegram_id?: string;
 }

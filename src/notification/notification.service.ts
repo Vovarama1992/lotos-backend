@@ -63,7 +63,7 @@ export class NotificationService {
   }
 
   async sendAdminTelegramNotification(
-    adminTelegramId: number,
+    adminTelegramId: string,
     type: TelegramAdminBotNotificationType,
     data: SendIncomingMessage | SendWithdrawalMessage
   ) {
