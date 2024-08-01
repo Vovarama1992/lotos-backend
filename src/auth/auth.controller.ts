@@ -27,6 +27,7 @@ import { CookieInterceptor } from "./interceptor/cookie.interceptor";
 import { LoginResponse } from "./type/loginResponse";
 import { SendCodeDto } from "./dto/send-code.dto";
 import { RestorePasswordDto } from "./dto/restore-password.dto";
+import { ConfigService } from "src/config/config.service";
 
 @ApiTags("auth")
 @UseInterceptors(CookieInterceptor)
@@ -38,7 +39,8 @@ export class AuthController {
     private readonly mailService: MailService,
     private readonly redisService: RedisService,
     private readonly referralInviteService: ReferralInviteService,
-    private readonly userReferralService: UserReferralService
+    private readonly userReferralService: UserReferralService,
+    private readonly configService: ConfigService
   ) {}
 
   @Post("telegram")
@@ -46,7 +48,7 @@ export class AuthController {
     summary: "Регистрация (вход) с помощью телеграм",
   })
   receiveTelegramAuthData(@Body() data: GetTelegramAuthDto) {
-    console.log(data)
+    console.log(data);
     return this.authService.signInAsTelegramUser(data);
   }
 
@@ -63,6 +65,7 @@ export class AuthController {
   @Post("sign")
   async registerUser(@Body() loginUserDto: RegisterUserDto) {
     const { email, phone, password } = loginUserDto;
+    const { currentDomain } = await this.configService.get();
     let existingUser = await this.userService.findOneByCredentials(
       email,
       phone
@@ -102,7 +105,7 @@ export class AuthController {
           email: email.toLowerCase(),
           password: hashedPassword,
         });
-        this.mailService.mailConfirm(email);
+        this.mailService.mailConfirm(email, currentDomain || "");
 
         //add referral records to user-referral table
         if (loginUserDto.user_referral_id) {
@@ -144,11 +147,13 @@ export class AuthController {
     summary: "Пользователь - отправить ссылку на восстановление пароля",
   })
   async sendCode(@Body() sendCodeDto: SendCodeDto, @Res() response) {
+    const { currentDomain } = await this.configService.get();
+
     const code = uuidv4();
     this.redisService.setCode(code, sendCodeDto.email);
     await this.mailService.codeSend(
       sendCodeDto.email,
-      `http://lotos.na4u.ru/?restoreCode=${code.toString()}`
+      `${currentDomain}/?restoreCode=${code.toString()}`
     );
     return response.status(HttpStatus.OK).json({
       status: "success",
@@ -168,7 +173,7 @@ export class AuthController {
       existingUser = await this.userService.saveUser(existingUser);
       const { id, role } = existingUser;
       const tokens = this.authService.assignTokens(id, role);
-      this.redisService.del(data.code)
+      this.redisService.del(data.code);
       return response.status(HttpStatus.OK).json({
         status: "success",
         accessToken: tokens.accessToken,

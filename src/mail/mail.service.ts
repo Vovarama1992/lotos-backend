@@ -8,13 +8,16 @@ import { UserResponse } from 'src/user/type/userResponse';
 export class MailService {
   constructor(private mailerService: MailerService) { }
 
-  async mailConfirm(mail: string) {
+  async mailConfirm(mail: string, link: string) {
     try {
       console.log('send email to', mail)
       await this.mailerService.sendMail({
         to: mail,
         subject: 'Welcome to Lotos! Confirm your Email',
-        template: './activate'
+        template: './activate',
+        context: {
+          link: link,
+        },
       });
     } catch (error){
       console.log(error)
