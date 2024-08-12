@@ -103,6 +103,7 @@ export class AdminBotService {
   ) {
     const isAuth = await this.checkUserAuth(msg.from.id);
     console.log(isAuth)
+    console.log(msg)
     if (!isAuth) {
       const isSuccess = await this.authenticateUser(msg.from.id.toString());
       console.log(msg);
