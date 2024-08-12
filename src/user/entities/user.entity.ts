@@ -12,6 +12,7 @@ import { UserRole } from "src/constants";
 import { Transaction } from "src/transaction/entities/transaction.entity";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { Notification } from "src/notification/entities/notification.entity";
+import { TransactionLog } from "src/transaction-log/entities/transaction-log.entity";
 
 export enum UserGender {
   MALE = "male",
@@ -152,4 +153,16 @@ export class User {
     onDelete: "CASCADE",
   })
   notifications: Notification[];
+
+  @OneToMany(() => TransactionLog, (log) => log.manager, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  transactionLogsAsManager: TransactionLog[];
+
+  @OneToMany(() => TransactionLog, (log) => log.user, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  transactionLogsAsUser: TransactionLog[];
 }

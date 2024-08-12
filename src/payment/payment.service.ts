@@ -372,7 +372,7 @@ export class PaymentService {
 
     await this.transactionService.confirmTransactionAsUser(transaction.id);
 
-    return await this.adminService.confirmBankTransaction(transaction.id);
+    return await this.adminService.confirmBankTransactionWrapper(transaction.id);
   }
 
   async confirmBankDepositByUser(

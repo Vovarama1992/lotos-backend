@@ -48,10 +48,18 @@ import { SaveAppConfigDto } from "./dto/save-app-config.dto";
 import { ConfigService } from "src/config/config.service";
 import { GetFinancialStatsQueryDto } from "./dto/get-financial-stats-query.dto";
 import { FinancialStatsService } from "src/financial-stats/financial-stats.service";
+import { TransactionLogService } from "src/transaction-log/transaction-log.service";
+import { CreateTransactionLogDto } from "src/transaction-log/dto/create-transaction-log.dto";
+import {
+  TransactionLogAction,
+  TransactionLogType,
+} from "src/transaction-log/entities/transaction-log.entity";
 
 @Injectable()
 export class AdminService {
   constructor(
+    @Inject(forwardRef(() => TransactionLogService))
+    private readonly transactionLogService: TransactionLogService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => WithdrawHistoryService))
@@ -72,7 +80,6 @@ export class AdminService {
     private readonly paymentDetailsRepository: Repository<PaymentDetails>,
     private readonly configService: ConfigService,
     private readonly financialStatsService: FinancialStatsService
-
   ) {}
 
   async getFinancialStats(query: GetFinancialStatsQueryDto) {
@@ -327,7 +334,93 @@ export class AdminService {
     return { data, count };
   }
 
-  async confirmBankTransaction(transaction_id: string) {
+  async getManager(props: { field: "id" | "telegram_id"; id: string }) {
+    let user = null as User;
+    if (props.field === "id") {
+      user = await this.userService.findOneById(props.id);
+    } else {
+      user = await this.userService.findOneByTelegramId(props.id);
+    }
+
+    return user;
+  }
+
+  async confirmBankTransactionWrapper(transactionId: string, manager?: User) {
+    const data = await this.confirmBankTransaction(transactionId) as Transaction;
+    if (manager) {
+      //create log
+      await this.transactionLogService.create({
+        manager: manager,
+        user: data.user,
+        amount: data.amount,
+        action: TransactionLogAction.ACCEPT,
+        type: TransactionLogType.DEPOSIT,
+        transactionId: transactionId,
+      });
+    }
+
+    return data;
+  }
+
+  async cancelBankTransactionWrapper(transactionId: string, manager?: User) {
+    const data = await this.cancelBankTransaction(transactionId) as Transaction;
+    if (manager) {
+      //create log
+      await this.transactionLogService.create({
+        manager: manager,
+        user: data.user,
+        amount: data.amount,
+        action: TransactionLogAction.DECLINE,
+        type: TransactionLogType.DEPOSIT,
+        transactionId: transactionId,
+      });
+    }
+
+    return data;
+  }
+
+  async cancelWithdrawTransactionWrapper(
+    transactionId: string,
+    manager?: User
+  ) {
+    const data = await this.cancelWithdrawTransaction(transactionId) as Withdraw;
+
+    if (manager) {
+      //create log
+      await this.transactionLogService.create({
+        manager: manager,
+        user: data.user,
+        amount: data.amount,
+        action: TransactionLogAction.DECLINE,
+        type: TransactionLogType.WITHDRAWAL,
+        transactionId: transactionId,
+      });
+    }
+
+    return data;
+  }
+
+  async confirmWithdrawTransactionWrapper(
+    transactionId: string,
+    manager?: User
+  ) {
+    const data = await this.confirmWithdrawTransaction(transactionId) as Withdraw;
+    if (manager) {
+      //create log
+      await this.transactionLogService.create({
+        manager: manager,
+        user: data.user,
+        amount: data.amount,
+        action: TransactionLogAction.ACCEPT,
+        type: TransactionLogType.WITHDRAWAL,
+        transactionId: transactionId,
+      });
+    }
+
+    return data;
+  }
+
+  private async confirmBankTransaction(transaction_id: string) {
     let transaction,
       error = null;
     try {
@@ -372,7 +465,7 @@ export class AdminService {
     return transaction;
   }
 
-  async cancelBankTransaction(transaction_id: string) {
+  private async cancelBankTransaction(transaction_id: string, manager?: User) {
     let transaction,
       error = null;
     try {
@@ -406,7 +499,7 @@ export class AdminService {
     return transaction;
   }
 
-  async cancelWithdrawTransaction(withdrawTransactionId: string) {
+  private async cancelWithdrawTransaction(withdrawTransactionId: string) {
     let error = null,
       withdrawTransaction: Withdraw;
 
@@ -448,7 +541,7 @@ export class AdminService {
     }
   }
 
-  async confirmWithdrawTransaction(withdrawTransactionId: string) {
+  private async confirmWithdrawTransaction(withdrawTransactionId: string) {
     let error = null,
       withdrawTransaction: Withdraw;
 
@@ -481,5 +574,9 @@ export class AdminService {
 
       return withdrawTransaction;
     }
+  }
+
+  async getTransactionLogs(){
+    return await this.transactionLogService.findAll();
   }
 }

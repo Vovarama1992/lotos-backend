@@ -292,7 +292,7 @@ export class UserService {
     });
   }
 
-  async findOneByTelegramId(telegramId: string): Promise<UserResponse> {
+  async findOneByTelegramId(telegramId: string): Promise<User> {
     return await this.usersRepository.findOneOrFail({
       where: { telegram_id: telegramId },
     });

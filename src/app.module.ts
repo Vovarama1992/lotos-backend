@@ -44,6 +44,7 @@ import { WithdrawHistoryModule } from "./withdraw-history/withdraw-history.modul
 import { MailModule } from "./mail/mail.module";
 import { MailService } from "./mail/mail.service";
 import { ENVIRONMENT } from "./constants";
+import { TransactionLogModule } from './transaction-log/transaction-log.module';
 
 const ENV = process.env.NODE_ENV;
 console.log(ENV)
@@ -99,7 +100,8 @@ console.log(ENV)
     UserReferralModule,
     ManagerBotModule,
     ConfigModule,
-    MailModule
+    MailModule,
+    TransactionLogModule
   ],
   controllers: [],
   providers: [RedisService, AppGateway, CryptocloudService, ConfigService, MailService],

@@ -401,7 +401,8 @@ ${userRow}
     transactionId: string
   ) {
     try {
-      await this.adminService.confirmBankTransaction(transactionId);
+      const manager = await this.adminService.getManager({field: 'telegram_id', id: query.from.id.toString()});
+      await this.adminService.confirmBankTransactionWrapper(transactionId, manager);
     } catch (err) {
       this.bot.sendMessage(query.message.chat.id, `Ошибка! ${err}`);
     }
@@ -417,7 +418,8 @@ ${userRow}
     transactionId: string
   ) {
     try {
-      await this.adminService.cancelBankTransaction(transactionId);
+      const manager = await this.adminService.getManager({field: 'telegram_id', id: query.from.id.toString()});
+      await this.adminService.cancelBankTransactionWrapper(transactionId, manager);
     } catch (err) {
       this.bot.sendMessage(query.message.chat.id, `Ошибка! ${err}`);
     }
@@ -433,7 +435,8 @@ ${userRow}
     withdrawalId: string
   ) {
     try {
-      await this.adminService.confirmWithdrawTransaction(withdrawalId);
+      const manager = await this.adminService.getManager({field: 'telegram_id', id: query.from.id.toString()});
+      await this.adminService.confirmWithdrawTransactionWrapper(withdrawalId, manager);
     } catch (err) {
       this.bot.sendMessage(query.message.chat.id, `Ошибка! ${err}`);
     }
@@ -449,7 +452,8 @@ ${userRow}
     withdrawalId: string
   ) {
     try {
-      await this.adminService.cancelWithdrawTransaction(withdrawalId);
+      const manager = await this.adminService.getManager({field: 'telegram_id', id: query.from.id.toString()});
+      await this.adminService.cancelWithdrawTransactionWrapper(withdrawalId, manager);
     } catch (err) {
       this.bot.sendMessage(query.message.chat.id, `Ошибка! ${err}`);
     }

@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from "@nestjs/common";
 import {
@@ -178,9 +179,18 @@ export class AdminController {
     description: "Отменённая транзакция",
     type: Transaction,
   })
-  cancelWithdrawMoney(@Body() cancelWithdrawMoneyDto: CancelWithdrawMoneyDto) {
-    return this.adminService.cancelWithdrawTransaction(
-      cancelWithdrawMoneyDto.withdraw_transaction_id
+  async cancelWithdrawMoney(
+    @Body() cancelWithdrawMoneyDto: CancelWithdrawMoneyDto,
+    @Req() req: any
+  ) {
+    const userId = req.user.id as string;
+    const manager = await this.adminService.getManager({
+      field: "id",
+      id: userId,
+    });
+    return await this.adminService.cancelWithdrawTransactionWrapper(
+      cancelWithdrawMoneyDto.withdraw_transaction_id,
+      manager
     );
   }
 
@@ -197,11 +207,20 @@ export class AdminController {
     description: "Транзакция",
     type: Transaction,
   })
-  confirmBankTransactionAsAdmin(
-    @Body() confirmBankTransactionDto: ConfirmBankTransactionDto
+  async confirmBankTransactionAsAdmin(
+    @Body() confirmBankTransactionDto: ConfirmBankTransactionDto,
+    @Req() req: any
   ) {
-    return this.adminService.confirmBankTransaction(
-      confirmBankTransactionDto.transaction_id
+    const userId = req.user.id as string;
+    const manager = await this.adminService.getManager({
+      field: "id",
+      id: userId,
+    });
+
+    console.log(manager);
+    return await this.adminService.confirmBankTransactionWrapper(
+      confirmBankTransactionDto.transaction_id,
+      manager
     );
   }
 
@@ -218,11 +237,18 @@ export class AdminController {
     description: "Транзакция",
     type: Transaction,
   })
-  cancelBankTransactionAsAdmin(
-    @Body() confirmBankTransactionDto: ConfirmBankTransactionDto
+  async cancelBankTransactionAsAdmin(
+    @Body() confirmBankTransactionDto: ConfirmBankTransactionDto,
+    @Req() req: any
   ) {
-    return this.adminService.cancelBankTransaction(
-      confirmBankTransactionDto.transaction_id
+    const userId = req.user.id as string;
+    const manager = await this.adminService.getManager({
+      field: "id",
+      id: userId,
+    });
+    return await this.adminService.cancelBankTransactionWrapper(
+      confirmBankTransactionDto.transaction_id,
+      manager
     );
   }
 
@@ -239,11 +265,18 @@ export class AdminController {
     description: "Транзакция",
     type: Transaction,
   })
-  confirmWithdrawTransaction(
-    @Body() confirmWithdrawTransactionDto: ConfirmWithdrawTransactionDto
+  async confirmWithdrawTransaction(
+    @Body() confirmWithdrawTransactionDto: ConfirmWithdrawTransactionDto,
+    @Req() req: any
   ) {
-    return this.adminService.confirmWithdrawTransaction(
-      confirmWithdrawTransactionDto.withdraw_transaction_id
+    const userId = req.user.id as string;
+    const manager = await this.adminService.getManager({
+      field: "id",
+      id: userId,
+    });
+    return await this.adminService.confirmWithdrawTransactionWrapper(
+      confirmWithdrawTransactionDto.withdraw_transaction_id,
+      manager
     );
   }
 
@@ -280,7 +313,13 @@ export class AdminController {
 
   @Get("financial-stats")
   @Roles([UserRole.ADMIN])
-  getFinancialStats(@Query() query: GetFinancialStatsQueryDto){
+  getFinancialStats(@Query() query: GetFinancialStatsQueryDto) {
     return this.adminService.getFinancialStats(query);
+  }
+
+  @Get("transaction-logs")
+  @Roles([UserRole.ADMIN])
+  getTransactionLogs() {
+    return this.adminService.getTransactionLogs();
   }
 }

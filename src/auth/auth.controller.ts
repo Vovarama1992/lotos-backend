@@ -65,7 +65,7 @@ export class AuthController {
   @Post("sign")
   async registerUser(@Body() loginUserDto: RegisterUserDto) {
     const { email, phone, password } = loginUserDto;
-    const { currentDomain } = await this.configService.get();
+    const { currentDomain } = await this.configService.get() || {};
     let existingUser = await this.userService.findOneByCredentials(
       email,
       phone
