@@ -16,7 +16,7 @@ export class TransactionLogService {
   ) {}
 
   async create(createTransactionLogDto: CreateTransactionLogDto) {
-    const { manager, user, action, type, message, transactionId, amount } =
+    const { manager, user, action, type, message, transactionId, transactionTimestamp, amount } =
       createTransactionLogDto;
 
     const transactionLog = new TransactionLog({
@@ -27,6 +27,7 @@ export class TransactionLogService {
       type,
       message,
       transaction_id: transactionId,
+      transaction_timestamp: transactionTimestamp
     });
 
     return await this.transactionLogRepository.save(transactionLog);
@@ -43,6 +44,7 @@ export class TransactionLogService {
         type: true,
         timestamp: true,
         transaction_id: true,
+        transaction_timestamp: true,
         amount: true,
         user: {
           id: true,

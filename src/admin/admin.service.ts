@@ -356,6 +356,7 @@ export class AdminService {
         action: TransactionLogAction.ACCEPT,
         type: TransactionLogType.DEPOSIT,
         transactionId: transactionId,
+        transactionTimestamp: data.timestamp
       });
     }
 
@@ -373,6 +374,7 @@ export class AdminService {
         action: TransactionLogAction.DECLINE,
         type: TransactionLogType.DEPOSIT,
         transactionId: transactionId,
+        transactionTimestamp: data.timestamp
       });
     }
 
@@ -394,6 +396,7 @@ export class AdminService {
         action: TransactionLogAction.DECLINE,
         type: TransactionLogType.WITHDRAWAL,
         transactionId: transactionId,
+        transactionTimestamp: data.timestamp
       });
     }
 
@@ -414,6 +417,7 @@ export class AdminService {
         action: TransactionLogAction.ACCEPT,
         type: TransactionLogType.WITHDRAWAL,
         transactionId: transactionId,
+        transactionTimestamp: data.timestamp
       });
     }
 

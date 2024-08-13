@@ -11,5 +11,6 @@ export class CreateTransactionLogDto {
   type: TransactionLogType;
   message?: string;
   transactionId: string;
+  transactionTimestamp: string;
   amount: number;
 }

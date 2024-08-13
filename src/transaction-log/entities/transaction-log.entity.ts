@@ -44,6 +44,9 @@ export class TransactionLog {
   @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" }) // Recommended
   timestamp: string;
 
+  @Column({ type: "timestamptz", nullable: true }) // Recommended
+  transaction_timestamp: string;
+
   constructor(transactionLog: Partial<TransactionLog>) {
     Object.assign(this, transactionLog);
   }
