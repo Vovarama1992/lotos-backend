@@ -18,11 +18,12 @@ import { AdminModule } from "src/admin/admin.module";
     TypeOrmModule.forFeature([DepositSession, PaymentDetails]),
     forwardRef(() => UsersModule),
     forwardRef(() => AdminModule),
-    TransactionModule,
-    GatewayModule,
-    NotificationModule,
+    forwardRef(() => TransactionModule),
+    forwardRef(() => GatewayModule),
+    forwardRef(() => NotificationModule),
   ],
   controllers: [PaymentController],
   providers: [PaymentService, CryptocloudService, RedisService, ConfigService],
+  exports: [PaymentService]
 })
 export class PaymentModule {}

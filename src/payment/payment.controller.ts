@@ -147,7 +147,8 @@ export class PaymentController {
       const amountInFiat = invoice.amount_in_fiat;
       const userId = invoice.order_id;
       const currentBalance = await this.userService.getBalance(userId);
-      const newBalance = currentBalance + amountInFiat;
+      const depositAmount = await this.paymentService.applyWelcomeBonusIfExists(userId, amountInFiat)
+      const newBalance = currentBalance + depositAmount;
       const user = await this.userService.changeBalance(userId, newBalance);
       const transaction =
         await this.transactionService.completeTransactionByInvoiceId(

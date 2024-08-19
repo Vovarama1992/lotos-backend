@@ -13,6 +13,7 @@ import { PaymentDetails } from "src/payment/entities/paymentDetails.entity";
 import { ConfigService } from "src/config/config.service";
 import { FinancialStatsModule } from "src/financial-stats/financial-stats.module";
 import { TransactionLogModule } from "src/transaction-log/transaction-log.module";
+import { PaymentModule } from "src/payment/payment.module";
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { TransactionLogModule } from "src/transaction-log/transaction-log.module
     forwardRef(()=>NotificationModule),
     forwardRef(()=>FinancialStatsModule),
     forwardRef(()=>TransactionLogModule),
-
+    forwardRef(()=>PaymentModule),
   ],
   controllers: [AdminController],
   providers: [AdminService, RedisService, ConfigService],

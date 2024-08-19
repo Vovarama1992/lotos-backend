@@ -64,8 +64,13 @@ export class AuthController {
 
   @Post("sign")
   async registerUser(@Body() loginUserDto: RegisterUserDto) {
-    const { email, phone, password } = loginUserDto;
-    const { currentDomain } = await this.configService.get() || {};
+    const {
+      email,
+      phone,
+      password,
+      welcome_bonus_activation = false,
+    } = loginUserDto;
+    const { currentDomain } = (await this.configService.get()) || {};
     let existingUser = await this.userService.findOneByCredentials(
       email,
       phone
@@ -104,6 +109,7 @@ export class AuthController {
           manager,
           email: email.toLowerCase(),
           password: hashedPassword,
+          bonusAutoActivation: welcome_bonus_activation,
         });
         this.mailService.mailConfirm(email, currentDomain || "");
 

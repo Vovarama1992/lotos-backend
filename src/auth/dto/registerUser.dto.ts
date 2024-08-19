@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -35,6 +36,11 @@ export class RegisterUserDto {
   @IsOptional()
   @IsUUID()
   user_referral_id?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  welcome_bonus_activation?: boolean
 }
 
 export class CheckUserRegister {

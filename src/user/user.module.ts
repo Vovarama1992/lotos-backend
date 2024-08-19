@@ -13,6 +13,7 @@ import { UserReferralModule } from "src/user-referral/user-referral.module";
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { WithdrawHistoryModule } from "src/withdraw-history/withdraw-history.module";
 import { User } from "./entities/user.entity";
+import { ConfigModule } from "src/config/entities/config.module";
 
 @Module({
   imports: [
@@ -24,6 +25,8 @@ import { User } from "./entities/user.entity";
     forwardRef(() => WithdrawHistoryModule),
     forwardRef(() => NotificationModule),
     forwardRef(() => UserReferralModule),
+    forwardRef(() => ConfigModule),
+
   ],
   controllers: [UserController],
   providers: [UserService],

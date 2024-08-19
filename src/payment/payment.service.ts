@@ -2,6 +2,8 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -46,10 +48,19 @@ export class PaymentService {
     private readonly depositSessionRepository: Repository<DepositSession>,
     @InjectRepository(PaymentDetails)
     private readonly paymentDetailsRepository: Repository<PaymentDetails>,
+    @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
+
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
+
+    @Inject(forwardRef(() => NotificationService))
     private readonly notificationService: NotificationService,
+
+    @Inject(forwardRef(() => ConfigService))
     private readonly configService: ConfigService,
+    
+    @Inject(forwardRef(() => AdminService))
     private readonly adminService: AdminService
   ) {}
 
@@ -57,19 +68,16 @@ export class PaymentService {
     return verify(token, process.env.CRYPTOCLOUD_SECRET_KEY);
   }
 
-  private selectCardWithHighestPriority(cards: PaymentDetails[]) {
-    if (!cards.length) throw new Error("No available cards");
-    let selectedCard = cards[0];
-    let maxPriority = cards[0].priority;
+  async applyWelcomeBonusIfExists(userId: string, amount: number) {
+    const user = await this.userService.findOneById(userId);
+    if (!user.bonusAutoActivation) return amount;
 
-    for (let i = 0; i < cards.length; i++) {
-      if (cards[i].priority > maxPriority) {
-        maxPriority = cards[i].priority;
-        selectedCard = cards[i];
-      }
-    }
+    const { welcomeBonus } = await this.configService.get();
+    const amountWithBonus = amount * (1 + welcomeBonus / 100);
+    user.bonusAutoActivation = false;
+    await this.userService.saveUser(user);
 
-    return selectedCard;
+    return amountWithBonus;
   }
 
   private async isCardAvailable(amount: number, paymentDetailId: string) {
@@ -337,7 +345,7 @@ export class PaymentService {
         amount: transaction.amount,
         timestamp: transaction.timestamp,
         payment_details: transaction.payment_details,
-        sender_name: transaction.sender_name
+        sender_name: transaction.sender_name,
       })
     );
 
@@ -372,7 +380,9 @@ export class PaymentService {
 
     await this.transactionService.confirmTransactionAsUser(transaction.id);
 
-    return await this.adminService.confirmBankTransactionWrapper(transaction.id);
+    return await this.adminService.confirmBankTransactionWrapper(
+      transaction.id
+    );
   }
 
   async confirmBankDepositByUser(

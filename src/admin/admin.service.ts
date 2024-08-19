@@ -54,6 +54,7 @@ import {
   TransactionLogAction,
   TransactionLogType,
 } from "src/transaction-log/entities/transaction-log.entity";
+import { PaymentService } from "src/payment/payment.service";
 
 @Injectable()
 export class AdminService {
@@ -70,6 +71,10 @@ export class AdminService {
     private readonly redisService: RedisService,
     @Inject(forwardRef(() => SocketService))
     private readonly socketService: SocketService,
+
+    @Inject(forwardRef(() => PaymentService))
+    private readonly paymentService: PaymentService,
+
     @Inject(forwardRef(() => NotificationService))
     private readonly notificationService: NotificationService,
     @InjectRepository(GamePlacement)
@@ -78,7 +83,11 @@ export class AdminService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(PaymentDetails)
     private readonly paymentDetailsRepository: Repository<PaymentDetails>,
+
+    @Inject(forwardRef(() => ConfigService))
     private readonly configService: ConfigService,
+
+    @Inject(forwardRef(() => FinancialStatsService))
     private readonly financialStatsService: FinancialStatsService
   ) {}
 
@@ -437,7 +446,8 @@ export class AdminService {
             transaction_id
           );
         const currentBalance = await this.userService.getBalance(userId);
-        const newBalance = currentBalance + transaction.amount;
+        const depositAmount = await this.paymentService.applyWelcomeBonusIfExists(userId, transaction.amount);
+        const newBalance = currentBalance + depositAmount;
         await this.userService.changeBalance(userId, newBalance);
 
         await this.notificationService.createNotifications(

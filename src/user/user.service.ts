@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   forwardRef,
@@ -41,6 +43,7 @@ import { GetWalletHistoryQueryDto } from "./dto/get-wallet-history.dto";
 import { TransactionService } from "src/transaction/transaction.service";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import * as bcrypt from "bcryptjs";
+import { ConfigService } from "src/config/config.service";
 
 @Injectable()
 export class UserService {
@@ -54,8 +57,17 @@ export class UserService {
     private readonly depositService: TransactionService,
     @Inject(forwardRef(() => NotificationService))
     private readonly notificationService: NotificationService,
-    private readonly userReferralService: UserReferralService
+    private readonly userReferralService: UserReferralService,
+    private readonly configService: ConfigService
   ) {}
+
+  async canWithdrawMoney(user: User) {
+    const { voyagerAmount } = await this.configService.get();
+    if (!user.bonusAutoActivation) return true;
+    if (user.totalLoss >= voyagerAmount) return true;
+
+    return false;
+  }
 
   async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     const user = await this.findOneById(userId);
@@ -423,6 +435,10 @@ export class UserService {
   }
 
   async withdrawMoney(user: User, withdrawMoneyDto: WithdrawMoneyDto) {
+    const canWithdraw = await this.canWithdrawMoney(user);
+    if (!canWithdraw)
+      throw new ConflictException({type: 'voyager-not-reached', message: "You can't withdraw money now!"});
+
     const withdrawTransaction =
       await this.withdrawService.createWithdrawTransaction({
         ...withdrawMoneyDto,
