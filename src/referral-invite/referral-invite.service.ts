@@ -51,7 +51,11 @@ export class ReferralInviteService {
   }
 
   async findAll(managerId: string) {
-    const {currentDomain = process.env.FRONTEND_URL} = await this.configService.get();
+    const {
+      currentDomain = process.env.FRONTEND_URL,
+      currentCasinoBotDomain = "",
+    } = await this.configService.get();
+
     const [data, _count] = await this.referralInviteRepository.findAndCount({
       where: { manager: { id: managerId } },
       order: { created_at: "DESC" },
@@ -59,6 +63,7 @@ export class ReferralInviteService {
 
     data.forEach((invitation) => {
       invitation.link = `${currentDomain}?referral_invitation_id=${invitation.id}`;
+      invitation.tg_link = `${currentCasinoBotDomain}?start=${invitation.id}`;
     });
 
     return data;

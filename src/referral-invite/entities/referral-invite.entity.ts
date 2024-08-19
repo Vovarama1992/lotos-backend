@@ -34,6 +34,9 @@ export class ReferralInvite {
   @ApiProperty()
   link: string;
 
+  @ApiProperty()
+  tg_link: string;
+
   public constructor(data: Partial<ReferralInvite>) {
     Object.assign(this, data);
   }
