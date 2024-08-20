@@ -18,6 +18,11 @@ export class GamesController {
     return await this.gamesService.getData(filterQuery);
   }
 
+  @Get("bonus-info")
+  async getBonusInfo() {
+    return await this.gamesService.getBonusInfo();
+  }
+
   @Get("/:category")
   async getGamesInCategory(@Param("category") category: string) {
     return await this.gamesService.getGamesInCategory(category);

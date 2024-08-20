@@ -9,6 +9,7 @@ import { Repository } from "typeorm";
 import { getLinkDTO } from "./decorators/getLink.dto";
 import { OpenGameRequest } from "./decorators/openGame.dto";
 import { GamePlacement } from "./entities/game-placement.entity";
+import { ConfigService } from "src/config/config.service";
 
 @Injectable()
 export class GamesService {
@@ -17,7 +18,8 @@ export class GamesService {
     private readonly freespinService: FreespinService,
     private readonly gameHistoryService: GameHistoryService,
     @InjectRepository(GamePlacement)
-    private readonly gamePlacementRepository: Repository<GamePlacement>
+    private readonly gamePlacementRepository: Repository<GamePlacement>,
+    private readonly configService: ConfigService
   ) {}
 
   private filterUniqueGames(games: any[]) {
@@ -82,6 +84,11 @@ export class GamesService {
       "apiData",
       JSON.stringify(response.data.content.gameList)
     );
+  }
+
+  async getBonusInfo() {
+    const { voyagerAmount, welcomeBonus } = await this.configService.get();
+    return { voyagerAmount, welcomeBonus };
   }
 
   async getGamesInCategory(category: string) {
