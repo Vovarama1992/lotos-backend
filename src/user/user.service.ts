@@ -263,7 +263,7 @@ export class UserService {
     const user = await this.usersRepository.findOneByOrFail({ id: userId });
     let parsedDob = null;
     if (updateUserProfileDto.dob) {
-      parsedDob = moment(updateUserProfileDto.dob);
+      parsedDob = moment(updateUserProfileDto.dob, 'DD.MM.YYYY');
       if (!(parsedDob as moment.Moment).isValid()) {
         throw new BadRequestException("Некорректный формат даты");
       } else {
