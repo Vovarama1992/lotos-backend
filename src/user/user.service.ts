@@ -387,7 +387,7 @@ export class UserService {
   async changeBalance(id: string, balance: number) {
     const user = await this.findOneById(id);
     user.balance = balance;
-    this.saveUser(user);
+    await this.saveUser(user);
     this.socketService.emitToUser(id, "balanceUpdated", {
       balance: user.balance,
     });
