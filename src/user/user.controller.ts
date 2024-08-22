@@ -155,6 +155,7 @@ export class UserController {
     if (cmd === "writeBet") {
       this.logger.log("WRITE_BET");
       this.logger.log(data);
+      this.logger.log("CURRENT BALANCE: ", balance);
 
       if (balance < data.bet) {
         return {
@@ -165,8 +166,10 @@ export class UserController {
       const profit = +data.win - +data.bet;
 
       const newBalance = balance + profit;
-      this.gameHistory.changeIsStart(data.sessionId);
-      this.userService.changeBalance(data.login, newBalance);
+      this.logger.log("NEW BALANCE: ", newBalance);
+
+      await this.gameHistory.changeIsStart(data.sessionId);
+      await this.userService.changeBalance(data.login, newBalance);
 
       await this.userService.increaseTotalLoss(
         data.login,
