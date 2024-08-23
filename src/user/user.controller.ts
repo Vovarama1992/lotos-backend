@@ -135,6 +135,8 @@ export class UserController {
   async userDataControl(@Body() data: any) {
     const cmd = data.cmd;
     const balance = await this.userService.getBalance(data.login);
+    const user = await this.userService.findOneById(data.login);
+
     if (data.key !== process.env.HALL_KEY)
       return {
         status: "fail",
@@ -145,46 +147,40 @@ export class UserController {
         status: "success",
         error: "",
         login: data.login,
-        balance: balance.toFixed(2),
+        balance: user.balance.toFixed(2),
         currency: "RUB",
       };
-      console.log(response);
       return response;
     }
 
     if (cmd === "writeBet") {
       this.logger.log("WRITE_BET");
       this.logger.log(data);
-      this.logger.log("CURRENT BALANCE: ", balance);
+      this.logger.log("CURRENT BALANCE: ",user.balance);
 
-      if (balance < data.bet) {
+      if (user.balance < data.bet) {
         return {
           status: "fail",
           error: "ERROR CODE",
         };
       }
-      const profit = +data.win - +data.bet;
+      const bet = +data.bet;
+      const win = +data.win;
+      const profit = win - bet;
 
-      const newBalance = balance + profit;
+      const newBalance = user.balance + profit;
       this.logger.log("NEW BALANCE: ", newBalance);
 
       await this.gameHistory.changeIsStart(data.sessionId);
-      await this.userService.changeBalance(data.login, newBalance);
 
-      await this.userService.increaseTotalLoss(
-        data.login,
-        +Math.abs(+data.bet).toFixed(2)
-      );
-
-      await this.userService.increaseTotalEarned(
-        data.login,
-        +Math.abs(+data.win).toFixed(2)
-      );
+      user.balance = newBalance;
+      user.totalLoss+=bet;
+      user.totalEarned+=win;
 
       return {
         status: "success",
         error: "",
-        loss: profit < 0 ? Math.abs(profit) : 0,
+        loss: profit < 0 ? -1*profit : 0,
         login: data.login,
         balance: newBalance,
         currency: "RUB",
