@@ -177,6 +177,8 @@ export class UserController {
       user.totalLoss+=bet;
       user.totalEarned+=win;
 
+      await this.userService.saveUser(user);
+      
       return {
         status: "success",
         error: "",
