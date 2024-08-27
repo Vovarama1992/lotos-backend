@@ -71,7 +71,8 @@ export class UserService {
       }
     );
 
-    return { user, notifications: unreadNotifications };
+    return user;
+    //return { user, notifications: unreadNotifications };
   }
 
   async canWithdrawMoney(user: User) {
