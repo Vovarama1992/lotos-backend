@@ -44,6 +44,7 @@ import { GetUserReferralsDto } from "./dto/get-user-referrals.dto";
 import { GetWalletHistoryQueryDto } from "./dto/get-wallet-history.dto";
 import { GetWalletHistoryResponseDto } from "./dto/get-wallet-history-response.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { SocketService } from "src/gateway/gateway.service";
 
 @ApiTags("user")
 @ApiBearerAuth("JWT")
@@ -53,7 +54,8 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly gameHistory: GameHistoryService,
-    private readonly transactionService: TransactionService
+    private readonly transactionService: TransactionService,
+    private readonly socketService: SocketService
   ) {}
 
   // run every monday at 10am moscow - расчитать и зачислить кэшбэк каждому юзеру
@@ -178,7 +180,10 @@ export class UserController {
       user.totalEarned+=win;
 
       await this.userService.saveUser(user);
-      
+      this.socketService.emitToUser(user.id, "balanceUpdated", {
+        balance: user.balance,
+      });
+
       return {
         status: "success",
         error: "",
