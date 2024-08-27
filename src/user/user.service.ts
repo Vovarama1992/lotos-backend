@@ -61,6 +61,19 @@ export class UserService {
     private readonly configService: ConfigService
   ) {}
 
+  async getMe(user: User) {
+    const unreadNotifications = await this.notificationService.getNotifications(
+      {
+        isViewed: false,
+        user: {
+          id: user.id,
+        },
+      }
+    );
+
+    return { user, notifications: unreadNotifications };
+  }
+
   async canWithdrawMoney(user: User) {
     const { voyagerAmount } = await this.configService.get();
     if (!user.bonusAutoActivation) return true;
@@ -263,7 +276,7 @@ export class UserService {
     const user = await this.usersRepository.findOneByOrFail({ id: userId });
     let parsedDob = null;
     if (updateUserProfileDto.dob) {
-      parsedDob = moment(updateUserProfileDto.dob, 'DD.MM.YYYY');
+      parsedDob = moment(updateUserProfileDto.dob, "DD.MM.YYYY");
       if (!(parsedDob as moment.Moment).isValid()) {
         throw new BadRequestException("Некорректный формат даты");
       } else {
@@ -437,7 +450,10 @@ export class UserService {
   async withdrawMoney(user: User, withdrawMoneyDto: WithdrawMoneyDto) {
     const canWithdraw = await this.canWithdrawMoney(user);
     if (!canWithdraw)
-      throw new ConflictException({type: 'voyager-not-reached', message: "You can't withdraw money now!"});
+      throw new ConflictException({
+        type: "voyager-not-reached",
+        message: "You can't withdraw money now!",
+      });
 
     const withdrawTransaction =
       await this.withdrawService.createWithdrawTransaction({

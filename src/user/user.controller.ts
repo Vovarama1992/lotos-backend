@@ -196,12 +196,8 @@ export class UserController {
   }
 
   @Get("/me")
-  async getMe(@Req() req): Promise<User> {
-    try {
-      return req.user;
-    } catch (error) {
-      throw new UnauthorizedException(`Error`);
-    }
+  getMe(@Req() req) {
+    return this.userService.getMe(req.user);
   }
 
   @Get("/deposits")
