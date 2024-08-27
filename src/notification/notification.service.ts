@@ -1,4 +1,9 @@
-import { Inject, Injectable, forwardRef } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/user/entities/user.entity";
 import { FindOptionsWhere, In, Repository } from "typeorm";
@@ -23,6 +28,17 @@ export class NotificationService {
     @Inject(forwardRef(() => AdminBotService))
     private readonly adminBotService: AdminBotService
   ) {}
+
+  async markNotificationAsRead(id: string) {
+    try{
+      const notification = await this.notificationRepository.findOneByOrFail({ id });
+      notification.isViewed = true;
+      await this.notificationRepository.save(notification);
+      return;
+    }catch(err){
+        throw new NotFoundException("Notification not found!");
+    }
+  }
 
   async sendAdminTelegramNotifications(
     adminUserIds: string[],
