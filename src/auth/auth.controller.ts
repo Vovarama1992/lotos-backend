@@ -53,12 +53,21 @@ export class AuthController {
   }
 
   @Post("check")
+  @ApiOperation({ summary: "Авторизация - проверить, существует ли пользователь" })
   async checkRegister(@Body() loginUserDto: CheckUserRegister) {
-    const { email, phone } = loginUserDto;
-    let existingUser = await this.userService.findOneByCredentials(
-      email,
-      phone
-    );
+    const { email, phone, telegram_id } = loginUserDto;
+    let existingUser = null;
+    if(email || phone){
+      existingUser = await this.userService.findOneByCredentials(
+        email,
+        phone
+      );
+    }else if(telegram_id){
+      try{
+        existingUser = await this.userService.findOneByTelegramId(telegram_id);
+      }catch{};
+    }
+    
     return existingUser ? true : false;
   }
 

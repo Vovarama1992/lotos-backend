@@ -44,6 +44,12 @@ export class RegisterUserDto {
 }
 
 export class CheckUserRegister {
+  @ApiProperty({required: false})
   email?: string;
+  
+  @ApiProperty({required: false})
   phone?: string;
+
+  @ApiProperty({required: false})
+  telegram_id?: string
 }
