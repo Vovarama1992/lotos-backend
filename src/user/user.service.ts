@@ -44,6 +44,7 @@ import { TransactionService } from "src/transaction/transaction.service";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import * as bcrypt from "bcryptjs";
 import { ConfigService } from "src/config/config.service";
+import { VoyagerService } from "src/voyager/voyager.service";
 
 @Injectable()
 export class UserService {
@@ -58,7 +59,9 @@ export class UserService {
     @Inject(forwardRef(() => NotificationService))
     private readonly notificationService: NotificationService,
     private readonly userReferralService: UserReferralService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly voyagerService: VoyagerService
+
   ) {}
 
   async getMe(user: User) {
@@ -75,10 +78,10 @@ export class UserService {
     //return { user, notifications: unreadNotifications };
   }
 
-  async canWithdrawMoney(user: User) {
-    const { voyagerAmount } = await this.configService.get();
-    if (!user.bonusAutoActivation) return true;
-    if (user.totalLoss >= voyagerAmount) return true;
+  async canWithdrawMoney(user: User) {    
+    if(await this.voyagerService.isVoyagerExceeded(user.id, user.totalLoss)){
+      return true;
+    }
 
     return false;
   }

@@ -14,6 +14,7 @@ import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity"
 import { WithdrawHistoryModule } from "src/withdraw-history/withdraw-history.module";
 import { User } from "./entities/user.entity";
 import { ConfigModule } from "src/config/entities/config.module";
+import { VoyagerModule } from "src/voyager/voyager.module";
 
 @Module({
   imports: [
@@ -26,6 +27,8 @@ import { ConfigModule } from "src/config/entities/config.module";
     forwardRef(() => NotificationModule),
     forwardRef(() => UserReferralModule),
     forwardRef(() => ConfigModule),
+    forwardRef(() => VoyagerModule),
+
 
   ],
   controllers: [UserController],

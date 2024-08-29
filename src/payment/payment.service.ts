@@ -40,6 +40,7 @@ import axios from "axios";
 import * as https from "https";
 import { AdminService } from "src/admin/admin.service";
 import { PaymentDetailMethod } from "./dto/get-payment-details-query.dto";
+import { VoyagerService } from "src/voyager/voyager.service";
 
 @Injectable()
 export class PaymentService {
@@ -59,9 +60,12 @@ export class PaymentService {
 
     @Inject(forwardRef(() => ConfigService))
     private readonly configService: ConfigService,
-    
+
     @Inject(forwardRef(() => AdminService))
-    private readonly adminService: AdminService
+    private readonly adminService: AdminService,
+
+    @Inject(forwardRef(() => VoyagerService))
+    private readonly voyagerService: VoyagerService
   ) {}
 
   verifyPaymentToken(token: string) {
@@ -72,9 +76,14 @@ export class PaymentService {
     const user = await this.userService.findOneById(userId);
     if (!user.bonusAutoActivation) return amount;
 
-    const { welcomeBonus } = await this.configService.get();
+    const { welcomeBonus, voyager=1 } = await this.configService.get();
     const amountWithBonus = amount * (1 + welcomeBonus / 100);
     user.bonusAutoActivation = false;
+
+    //create voyager record 
+    await this.voyagerService.create(userId, amount * voyager);
+    
+    //save user
     await this.userService.saveUser(user);
 
     return amountWithBonus;

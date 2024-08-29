@@ -11,6 +11,7 @@ export class CasinoConfig {
   currentCasinoBotDomain: string;
 
   voyagerAmount: number;
+  voyager: number;
   welcomeBonus: number;
 
   public constructor(data: Partial<CasinoConfig>) {

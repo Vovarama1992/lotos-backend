@@ -45,6 +45,8 @@ import { MailModule } from "./mail/mail.module";
 import { MailService } from "./mail/mail.service";
 import { ENVIRONMENT } from "./constants";
 import { TransactionLogModule } from './transaction-log/transaction-log.module';
+import { VoyagerModule } from './voyager/voyager.module';
+import { Voyager } from "./voyager/entities/voyager.entity";
 
 const ENV = process.env.NODE_ENV;
 console.log(ENV)
@@ -76,6 +78,7 @@ console.log(ENV)
           UserReferral,
           DepositSession,
           PaymentDetails,
+          Voyager
         ],
         database: configService.getOrThrow("POSTGRES_DB"),
         synchronize: configService.getOrThrow("TYPEORM_AUTOMIGRATE"),
@@ -101,7 +104,8 @@ console.log(ENV)
     ManagerBotModule,
     ConfigModule,
     MailModule,
-    TransactionLogModule
+    TransactionLogModule,
+    VoyagerModule
   ],
   controllers: [],
   providers: [RedisService, AppGateway, CryptocloudService, ConfigService, MailService],

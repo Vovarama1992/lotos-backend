@@ -12,6 +12,7 @@ import { PaymentController } from "./payment.controller";
 import { PaymentService } from "./payment.service";
 import { ConfigService } from "src/config/config.service";
 import { AdminModule } from "src/admin/admin.module";
+import { VoyagerModule } from "src/voyager/voyager.module";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AdminModule } from "src/admin/admin.module";
     forwardRef(() => TransactionModule),
     forwardRef(() => GatewayModule),
     forwardRef(() => NotificationModule),
+    forwardRef(() => VoyagerModule),
   ],
   controllers: [PaymentController],
   providers: [PaymentService, CryptocloudService, RedisService, ConfigService],

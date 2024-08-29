@@ -55,6 +55,7 @@ import {
   TransactionLogType,
 } from "src/transaction-log/entities/transaction-log.entity";
 import { PaymentService } from "src/payment/payment.service";
+import { VoyagerService } from "src/voyager/voyager.service";
 
 @Injectable()
 export class AdminService {
@@ -67,8 +68,8 @@ export class AdminService {
     private readonly withdrawService: WithdrawHistoryService,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
-    @Inject(forwardRef(() => RedisService))
-    private readonly redisService: RedisService,
+    @Inject(forwardRef(() => VoyagerService))
+    private readonly voyagerService: VoyagerService,
     @Inject(forwardRef(() => SocketService))
     private readonly socketService: SocketService,
 

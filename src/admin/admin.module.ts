@@ -14,6 +14,7 @@ import { ConfigService } from "src/config/config.service";
 import { FinancialStatsModule } from "src/financial-stats/financial-stats.module";
 import { TransactionLogModule } from "src/transaction-log/transaction-log.module";
 import { PaymentModule } from "src/payment/payment.module";
+import { VoyagerModule } from "src/voyager/voyager.module";
 
 @Module({
   imports: [
@@ -25,6 +26,8 @@ import { PaymentModule } from "src/payment/payment.module";
     forwardRef(()=>FinancialStatsModule),
     forwardRef(()=>TransactionLogModule),
     forwardRef(()=>PaymentModule),
+    forwardRef(()=>VoyagerModule),
+
   ],
   controllers: [AdminController],
   providers: [AdminService, RedisService, ConfigService],
