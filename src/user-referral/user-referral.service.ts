@@ -172,7 +172,9 @@ export class UserReferralService {
   async getReferralsWithStats(userId: string, type: GetUserReferralType) {
     const { currentDomain = process.env.FRONTEND_URL } =
       await this.configService.get();
+
     const referralLink = `${currentDomain}?user_referral_id=${userId}`;
+    const referralTelegramLink = `https://t.me/lotoscasinobot?start=ur-${userId}`;
 
     const { totalCashback, usersWithLevel } =
       await this.calculateUserReferralCashback(userId);
@@ -192,7 +194,11 @@ export class UserReferralService {
       wonAmount: totalCashback.toFixed(2),
     };
 
-    return { stats, users: usersWithLevel, link: referralLink };
+    return {
+      stats,
+      users: usersWithLevel,
+      link: { siteLink: referralLink, telegramLink: referralTelegramLink },
+    };
   }
 
   async getReferrals(userId: string, type: GetUserReferralType) {

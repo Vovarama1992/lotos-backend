@@ -74,6 +74,7 @@ export class AdminBotService {
     });
 
     bot.on("message", async (msg) => {
+      console.log(msg)
       this.authMiddleware(this.handleProcessCommand, msg);
     });
 

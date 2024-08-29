@@ -63,7 +63,7 @@ export class ReferralInviteService {
 
     data.forEach((invitation) => {
       invitation.link = `${currentDomain}?referral_invitation_id=${invitation.id}`;
-      invitation.tg_link = `${currentCasinoBotDomain}?start=${invitation.id}`;
+      invitation.tg_link = `${currentCasinoBotDomain}?start=ri-${invitation.id}`;
     });
 
     return data;
