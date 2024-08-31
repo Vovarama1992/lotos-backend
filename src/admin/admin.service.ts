@@ -457,7 +457,7 @@ export class AdminService {
           {
             status: NotificationStatus.INFO,
             type: NotificationType.SYSTEM,
-            message: `Вы успешно пополнили свой баланс на ${(transaction as Transaction).amount} RUB`,
+            message: `Вы успешно пополнили свой баланс на ${depositAmount} RUB`,
             data: {
               transaction_id: transaction_id,
             },
