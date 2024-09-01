@@ -45,6 +45,7 @@ import { GetWalletHistoryQueryDto } from "./dto/get-wallet-history.dto";
 import { GetWalletHistoryResponseDto } from "./dto/get-wallet-history-response.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { SocketService } from "src/gateway/gateway.service";
+import { formatMoneyAmount } from "src/utils";
 
 @ApiTags("user")
 @ApiBearerAuth("JWT")
@@ -175,9 +176,9 @@ export class UserController {
 
       await this.gameHistory.changeIsStart(data.sessionId);
 
-      user.balance = newBalance;
-      user.totalLoss+=bet;
-      user.totalEarned+=win;
+      user.balance = formatMoneyAmount(newBalance);
+      user.totalLoss+=formatMoneyAmount(bet);
+      user.totalEarned+=formatMoneyAmount(win);
 
       await this.userService.saveUser(user);
       this.socketService.emitToUser(user.id, "balanceUpdated", {
@@ -189,7 +190,7 @@ export class UserController {
         error: "",
         loss: profit < 0 ? -1*profit : 0,
         login: data.login,
-        balance: newBalance,
+        balance: formatMoneyAmount(newBalance),
         currency: "RUB",
       };
     }
