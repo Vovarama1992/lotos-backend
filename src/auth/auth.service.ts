@@ -5,13 +5,19 @@ import { AccessTokenPayload, RefreshTokenPayload } from "./type/jwtPayload";
 import { UserRole } from "src/constants";
 import axios from "axios";
 import { GetTelegramAuthDto } from "./dto/get-telegram-auth.dto";
+import { ReferralInviteService } from "src/referral-invite/referral-invite.service";
+import { UserReferralService } from "src/user-referral/user-referral.service";
 const { createHash, createHmac } = require("crypto");
 
 @Injectable()
 export class AuthService {
   private readonly telegramAuthSecret: any;
 
-  constructor(private readonly userService: UserService) {
+  constructor(
+    private readonly userService: UserService,
+    private readonly referralInviteService: ReferralInviteService,
+    private readonly userReferralService: UserReferralService
+  ) {
     this.telegramAuthSecret = createHash("sha256")
       .update(process.env.TELEGRAM_BOT_TOKEN)
       .digest();
@@ -39,12 +45,14 @@ export class AuthService {
   async signInAsTelegramUser(data: GetTelegramAuthDto) {
     let existingUser = null;
     try {
-      existingUser = await this.userService.findOneByTelegramId(data.id.toString());
+      existingUser = await this.userService.findOneByTelegramId(
+        data.id.toString()
+      );
     } catch (err) {}
 
     const isNew = !existingUser;
 
-    console.log('check signature: ', this.checkSignature(data))
+    console.log("check signature: ", this.checkSignature(data));
     // if (!this.checkSignature(data))
     //   throw new ForbiddenException("Forbidden. Hash mismatch!");
 
@@ -55,12 +63,33 @@ export class AuthService {
     if (!existingUser) {
       //create new user
 
+      let manager = null;
+
+      // connect new user to manager by referral_invitation_id
+      if (data.referral_invitation_id) {
+        const referralInvitation = await this.referralInviteService.findOne(
+          data.referral_invitation_id
+        );
+        await this.referralInviteService.acceptReferralInvitation(
+          data.referral_invitation_id
+        );
+        manager = referralInvitation.manager;
+      }
+
       existingUser = await this.userService.saveUser({
+        manager,
         telegram_id: data.id.toString(),
         telegram_username: data.username,
         name: data.first_name,
         surname: data.last_name,
       });
+
+      if (data.user_referral_id) {
+        await this.userReferralService.addReferral(
+          data.user_referral_id,
+          existingUser.id
+        );
+      }
     }
 
     const { id, role } = existingUser;
