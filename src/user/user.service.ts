@@ -64,6 +64,10 @@ export class UserService {
 
   ) {}
 
+  async removeUser(userId: string) {
+    return await this.usersRepository.delete({id: userId});
+  }
+
   async getMe(user: User) {
     const unreadNotifications = await this.notificationService.getNotifications(
       {

@@ -12,6 +12,7 @@ import {
   Query,
   Req,
   UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -46,9 +47,13 @@ import { GetWalletHistoryResponseDto } from "./dto/get-wallet-history-response.d
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { SocketService } from "src/gateway/gateway.service";
 import { formatMoneyAmount } from "src/utils";
+import { Roles } from "src/auth/decorator/roles.decorator";
+import { UserRole } from "src/constants";
+import { RolesGuard } from "src/auth/guard/role.guard";
 
 @ApiTags("user")
 @ApiBearerAuth("JWT")
+@UseGuards(RolesGuard)
 @Controller("user")
 export class UserController {
   private readonly logger = new Logger("UserController");
@@ -64,6 +69,12 @@ export class UserController {
   depositCashBack() {
     console.log("Running cron job - deposit cashback to users (Monday 10 am)");
     this.userService.depositCashback();
+  }
+
+  @Delete("/:id")
+  @Roles([UserRole.ADMIN])
+  deleteUser(@Param("id") userId: string) {
+    return this.userService.removeUser(userId);
   }
 
   @Get("balance")
