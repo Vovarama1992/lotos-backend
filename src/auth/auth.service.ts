@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, Logger } from "@nestjs/common";
 import { sign, verify } from "jsonwebtoken";
 import { UserService } from "../user/user.service";
 import { AccessTokenPayload, RefreshTokenPayload } from "./type/jwtPayload";
@@ -12,6 +12,7 @@ const { createHash, createHmac } = require("crypto");
 @Injectable()
 export class AuthService {
   private readonly telegramAuthSecret: any;
+  private readonly logger = new Logger("AuthService");
 
   constructor(
     private readonly userService: UserService,
@@ -88,7 +89,7 @@ export class AuthService {
         await this.userReferralService.addReferral(
           data.user_referral_id,
           existingUser.id
-        );
+        ).catch(err => this.logger.error(`ADD REFERRAL ERROR (TG): ${err}`));
       }
     }
 
