@@ -27,12 +27,13 @@ export class UserReferralService {
     const referralUser = (await this.userRepository.findOneByOrFail({
       id: referralId,
     })) as User;
+
     const userReferral1 = new UserReferral({
-      user: (await this.userRepository.findOneByOrFail({ id: userId })) as User,
+      userId: userId,
       referral: referralUser,
       level: 1,
     });
-    this.userReferralRepository.save(userReferral1);
+    await this.userReferralRepository.save(userReferral1);
 
     // найти узел на 1 выше
     const parentUserReferral = await this.userReferralRepository.findOne({
@@ -42,9 +43,7 @@ export class UserReferralService {
 
     if (parentUserReferral) {
       const userReferral2 = new UserReferral({
-        user: (await this.userRepository.findOneByOrFail({
-          id: parentUserReferral.user.id,
-        })) as User,
+        userId: parentUserReferral.user.id,
         referral: referralUser,
         level: 2,
       });
@@ -57,9 +56,7 @@ export class UserReferralService {
 
       if (parentUserReferral1) {
         const userReferral3 = new UserReferral({
-          user: (await this.userRepository.findOneByOrFail({
-            id: parentUserReferral1.user.id,
-          })) as User,
+          userId: parentUserReferral1.user.id,
           referral: referralUser,
           level: 3,
         });

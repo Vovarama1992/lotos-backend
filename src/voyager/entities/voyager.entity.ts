@@ -12,7 +12,7 @@ export class Voyager {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @ManyToOne(() => User, { cascade: true })
+  @ManyToOne(() => User, { onDelete:'CASCADE' })
   @JoinColumn()
   user: User;
 

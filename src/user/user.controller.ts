@@ -148,7 +148,6 @@ export class UserController {
   @Post()
   async userDataControl(@Body() data: any) {
     const cmd = data.cmd;
-    const balance = await this.userService.getBalance(data.login);
     const user = await this.userService.findOneById(data.login);
 
     if (data.key !== process.env.HALL_KEY)

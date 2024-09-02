@@ -18,6 +18,9 @@ export class UserReferral {
   @JoinColumn()
   user: User;
 
+  @Column()
+  userId: string;
+
   @ManyToOne(() => User, { cascade: true })
   @JoinColumn()
   referral: User;

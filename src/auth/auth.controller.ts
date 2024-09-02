@@ -4,6 +4,7 @@ import {
   Controller,
   ForbiddenException,
   HttpStatus,
+  Logger,
   Post,
   Req,
   Res,
@@ -33,6 +34,7 @@ import { ConfigService } from "src/config/config.service";
 @UseInterceptors(CookieInterceptor)
 @Controller("/auth")
 export class AuthController {
+  private readonly logger = new Logger("AuthController");
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
@@ -53,21 +55,20 @@ export class AuthController {
   }
 
   @Post("check")
-  @ApiOperation({ summary: "Авторизация - проверить, существует ли пользователь" })
+  @ApiOperation({
+    summary: "Авторизация - проверить, существует ли пользователь",
+  })
   async checkRegister(@Body() loginUserDto: CheckUserRegister) {
     const { email, phone, telegram_id } = loginUserDto;
     let existingUser = null;
-    if(email || phone){
-      existingUser = await this.userService.findOneByCredentials(
-        email,
-        phone
-      );
-    }else if(telegram_id){
-      try{
+    if (email || phone) {
+      existingUser = await this.userService.findOneByCredentials(email, phone);
+    } else if (telegram_id) {
+      try {
         existingUser = await this.userService.findOneByTelegramId(telegram_id);
-      }catch{};
+      } catch {}
     }
-    
+
     return existingUser ? true : false;
   }
 
@@ -124,10 +125,9 @@ export class AuthController {
 
         //add referral records to user-referral table
         if (loginUserDto.user_referral_id) {
-          await this.userReferralService.addReferral(
-            loginUserDto.user_referral_id,
-            existingUser.id
-          );
+          await this.userReferralService
+            .addReferral(loginUserDto.user_referral_id, existingUser.id)
+            .catch((err) => this.logger.error(`ADD REFERRAL ERROR: ${err}`));
         }
       }
       const { id, role } = existingUser;
