@@ -83,7 +83,7 @@ export class NotificationService {
     type: TelegramAdminBotNotificationType,
     data: SendIncomingMessage | SendWithdrawalMessage
   ) {
-    return this.adminBotService.sendMessageToUser(adminTelegramId, type, data);
+    return await this.adminBotService.sendMessageToUser(adminTelegramId, type, data);
   }
 
   async getNotifications(

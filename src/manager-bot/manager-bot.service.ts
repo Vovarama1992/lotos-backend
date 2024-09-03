@@ -15,6 +15,7 @@ import { WithdrawHistoryService } from "src/withdraw-history/withdraw-history.se
 import { Withdraw } from "src/withdraw-history/entities/withdraw-history.entity";
 import { ENVIRONMENT } from "src/constants";
 import { UserService } from "src/user/user.service";
+import * as momentWithTz from "moment-timezone";
 
 const AdminSetName = "admin-usernames";
 
@@ -266,7 +267,7 @@ ${userRow}
 ${data.payment_details?.data}
 <b>Сумма:</b>   ${data.amount} RUB
 <b>Имя покупателя:</b>   ${data.sender_name}
-<b>Дата:</b>   ${moment(data.timestamp).format("DD.MM.YYYY, hh:mm:ss")}
+<b>Дата:</b>   ${momentWithTz(data.timestamp).tz("Europe/Moscow").format("DD.MM.YYYY, hh:mm:ss")}
 
 <b>Статус:</b>  в обработке`,
       {
@@ -310,7 +311,7 @@ ${userRow}
 <b>Метод:</b>   ${data.method}
 <b>Реквизиты: </b>   ${formattedPaymentDetails}
 <b>Сумма:</b>   ${data.amount} ${data.currency}
-<b>Дата:</b>   ${moment(data.timestamp).format("DD.MM.YYYY, hh:mm:ss")}
+<b>Дата:</b>   ${momentWithTz(data.timestamp).tz('Europe/Moscow').format("DD.MM.YYYY, hh:mm:ss")}
 
 <b>Статус:</b>  в обработке`,
       {

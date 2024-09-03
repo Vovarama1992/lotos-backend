@@ -61,11 +61,10 @@ export class UserService {
     private readonly userReferralService: UserReferralService,
     private readonly configService: ConfigService,
     private readonly voyagerService: VoyagerService
-
   ) {}
 
   async removeUser(userId: string) {
-    return await this.usersRepository.delete({id: userId});
+    return await this.usersRepository.delete({ id: userId });
   }
 
   async getMe(user: User) {
@@ -82,8 +81,8 @@ export class UserService {
     return { user, notifications: unreadNotifications };
   }
 
-  async canWithdrawMoney(user: User) {    
-    if(await this.voyagerService.isVoyagerExceeded(user.id, user.totalLoss)){
+  async canWithdrawMoney(user: User) {
+    if (await this.voyagerService.isVoyagerExceeded(user.id, user.totalLoss)) {
       return true;
     }
 
