@@ -20,9 +20,7 @@ export class GamesService {
     @InjectRepository(GamePlacement)
     private readonly gamePlacementRepository: Repository<GamePlacement>,
     private readonly configService: ConfigService
-  ) {
-    this.fetchData()
-  }
+  ) {}
 
   private filterUniqueGames(games: any[]) {
     const gamesSet = new Set();

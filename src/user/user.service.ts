@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
   forwardRef,
 } from "@nestjs/common";
 import { UserResponse } from "./type/userResponse";
@@ -62,6 +63,14 @@ export class UserService {
     private readonly configService: ConfigService,
     private readonly voyagerService: VoyagerService
   ) {}
+
+  async getVoyager(userId: string) {
+    const voyager = await this.voyagerService.findByUserId(userId);
+    if(!voyager) throw new NotFoundException("Voyager not found");
+
+    const user = await this.findOneById(userId);
+    return { totalLoss: user.totalLoss, voyager: voyager.amount };
+  }
 
   async removeUser(userId: string) {
     return await this.usersRepository.delete({ id: userId });
