@@ -20,7 +20,9 @@ export class GamesService {
     @InjectRepository(GamePlacement)
     private readonly gamePlacementRepository: Repository<GamePlacement>,
     private readonly configService: ConfigService
-  ) {}
+  ) {
+    this.fetchData()
+  }
 
   private filterUniqueGames(games: any[]) {
     const gamesSet = new Set();
@@ -67,8 +69,8 @@ export class GamesService {
   @Cron("0 */30 * * * *") // Запускается каждые 30 минут
   async fetchData() {
     const requestBody = {
-      hall: "3203325",
-      key: "kvadder",
+      hall: process.env.HALL_ID,
+      key: process.env.HALL_KEY,
       cmd: "gamesList",
     };
     const response = await axios.post(process.env.HALL_API, requestBody, {
