@@ -13,6 +13,9 @@ import { ConfigService } from "src/config/config.service";
 
 @Injectable()
 export class GamesService {
+  private hiddenProviders = ["playson"];
+  private hiddenGameIds = ['8424', '8423', '8422', '8421', '8419'];
+
   constructor(
     private readonly redisService: RedisService,
     private readonly freespinService: FreespinService,
@@ -20,7 +23,9 @@ export class GamesService {
     @InjectRepository(GamePlacement)
     private readonly gamePlacementRepository: Repository<GamePlacement>,
     private readonly configService: ConfigService
-  ) {}
+  ) {
+    this.fetchData()
+  }
 
   private filterUniqueGames(games: any[]) {
     const gamesSet = new Set();
@@ -60,8 +65,14 @@ export class GamesService {
         if (game.label !== filter.provider) doesMatch = false;
       }
 
+      if(this.hiddenGameIds.includes(game.id)) doesMatch = false;
+
       return doesMatch;
     });
+  }
+
+  private filterProviders(providers: string[]) {
+    return providers.filter((p) => !this.hiddenProviders.includes(p));
   }
 
   @Cron("0 */30 * * * *") // Запускается каждые 30 минут
@@ -78,11 +89,11 @@ export class GamesService {
     await this.redisService.del("apiData");
     await this.redisService.set(
       "gameLabels",
-      JSON.stringify(response.data.content.gameLabels)
+      JSON.stringify(this.filterProviders(response.data.content.gameLabels))
     );
     await this.redisService.set(
       "apiData",
-      JSON.stringify(response.data.content.gameList)
+      JSON.stringify(this.filterGames(this.filterUniqueGames(response.data.content.gameList), {}))
     );
   }
 
@@ -114,7 +125,7 @@ export class GamesService {
   async getData(filter: { provider?: string; name?: string }) {
     const cachedData = await this.redisService.get("apiData");
     return cachedData
-      ? this.filterGames(this.filterUniqueGames(JSON.parse(cachedData)), filter)
+      ? this.filterGames(JSON.parse(cachedData), filter)
       : null;
   }
 
