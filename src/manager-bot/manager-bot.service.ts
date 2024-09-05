@@ -255,7 +255,6 @@ export class AdminBotService {
     });
 
     const userRow = this.getUserRowForMessage(data);
-    console.log("sendIncomingNotification: ", data)
 
     this.bot.sendMessage(
       chatId,
@@ -268,7 +267,7 @@ ${userRow}
 ${data.payment_details?.data}
 <b>Сумма:</b>   ${data.amount} RUB
 <b>Имя покупателя:</b>   ${data.sender_name}
-<b>Дата:</b>   ${momentWithTz(data.timestamp).tz("Europe/Moscow").format("DD.MM.YYYY, hh:mm:ss")}
+<b>Дата:</b>   ${momentWithTz(data.timestamp).tz("Europe/Moscow").format("DD.MM.YYYY, HH:mm:ss")}
 
 <b>Статус:</b>  в обработке`,
       {
@@ -312,7 +311,7 @@ ${userRow}
 <b>Метод:</b>   ${data.method}
 <b>Реквизиты: </b>   ${formattedPaymentDetails}
 <b>Сумма:</b>   ${data.amount} ${data.currency}
-<b>Дата:</b>   ${momentWithTz(data.timestamp).tz('Europe/Moscow').format("DD.MM.YYYY, hh:mm:ss")}
+<b>Дата:</b>   ${momentWithTz(data.timestamp).tz('Europe/Moscow').format("DD.MM.YYYY, HH:mm:ss")}
 
 <b>Статус:</b>  в обработке`,
       {
