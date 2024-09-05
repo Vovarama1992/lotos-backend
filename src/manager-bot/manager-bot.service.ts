@@ -255,6 +255,7 @@ export class AdminBotService {
     });
 
     const userRow = this.getUserRowForMessage(data);
+    console.log("sendIncomingNotification: ", data)
 
     this.bot.sendMessage(
       chatId,
