@@ -347,9 +347,7 @@ export class PaymentService {
       adminUserIds,
       new SendIncomingMessage({
         transaction_id: transaction.id,
-        user_email: transaction.user.email,
-        user_tg: transaction.user.telegram_username,
-        user_tel: transaction.user.phone,
+        user:transaction.user,
         type: transaction.type,
         amount: transaction.amount,
         timestamp: transaction.timestamp,

@@ -507,7 +507,7 @@ export class UserService {
       adminUserIds,
       new SendWithdrawalMessage({
         withdrawal_id: withdrawTransaction.id,
-        user_email: withdrawTransaction.user.email,
+        user: withdrawTransaction.user,
         amount: withdrawTransaction.amount,
         method: withdrawTransaction.method,
         timestamp: withdrawTransaction.timestamp,

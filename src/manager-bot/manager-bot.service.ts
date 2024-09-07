@@ -233,12 +233,15 @@ export class AdminBotService {
   private getUserRowForMessage(
     data: SendIncomingMessage | SendWithdrawalMessage
   ) {
-    let userRow = `<b>Email:</b>   ${data.user_email}`;
-    if (!data.user_email) {
-      if (data.user_tg) {
-        userRow = `<b>Telegram:</b>   ${data.user_tg}`;
-      } else if (data.user_tel) {
-        userRow = `<b>Phone:</b>   ${data.user_tel}`;
+    const {email, telegram_id, telegram_username, phone, name} = data.user;
+    let userRow = `<b>Email:</b>   ${email}`;
+    if (!email) {
+      if (telegram_username) {
+        userRow = `<b>Telegram:</b>   ${telegram_username}`;
+      } else if (phone) {
+        userRow = `<b>Phone:</b>   ${phone}`;
+      }else if(telegram_id){
+        userRow = `<b>TG id:</b>   ${telegram_id} (${name})`;
       }
     }
     return userRow;
