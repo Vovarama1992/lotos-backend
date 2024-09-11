@@ -198,10 +198,10 @@ export class UserService {
       await this.depositCashbackForUser(user.id, adminIds);
     }
 
-    allUsers.forEach((user) => {
+    {/*allUsers.forEach((user) => {
       user.lastTotalLoss = user.totalLoss;
       user.lastTotalEarned = user.totalEarned;
-    });
+    });*/}
 
     await this.usersRepository.save(allUsers);
   }
